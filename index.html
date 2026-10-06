@@ -8,6 +8,14 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- KaTeX for math rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+        onload="renderMathInElement(document.body, {delimiters: [
+            {left: '\\\\(', right: '\\\\)', display: false},
+            {left: '\\\\[', right: '\\\\]', display: true}
+        ]});"></script>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -19,14 +27,14 @@
         <div class="header-container">
             <div class="brand-wrapper">
                 <div class="brand-shield" id="appBrandIcon">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
                         <path d="m9 12 2 2 4-4"/>
                     </svg>
                 </div>
                 <div class="brand-text">
-                    <h1>AEGISBOX <span style="font-size:0.75rem; font-weight:600; color:var(--accent-cyan); letter-spacing:0.05em; border:1px solid rgba(6,182,212,0.3); padding:2px 8px; border-radius:4px; vertical-align:middle;">CRYPTOGRAPHY PROJECT</span></h1>
-                    <p>Kotak Saran & Whistleblower Anonim Terverifikasi &bull; Kriptografi RSA Manual Murni (Tanpa Library)</p>
+                    <h1>AEGISBOX <span style="font-size:0.7rem; font-weight:600; color:var(--primary); letter-spacing:0.05em; border:1px solid var(--border-highlight); padding:2px 8px; border-radius:4px; vertical-align:middle;">CRYPTOGRAPHY PROJECT</span></h1>
+                    <p>Kotak Saran &amp; Whistleblower Anonim Terverifikasi &bull; Kriptografi RSA Manual Murni (Tanpa Library)</p>
                 </div>
             </div>
 
@@ -51,25 +59,35 @@
     <nav class="nav-tabs-wrapper">
         <div class="nav-tabs">
             <button class="nav-tab-btn active" data-tab="tab-submit" id="navTabSubmit">
-                <span class="tab-icon">📝</span>
+                <span class="tab-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                </span>
                 <span>Kirim Laporan (Whistleblower)</span>
             </button>
             <button class="nav-tab-btn" data-tab="tab-auditor" id="navTabAuditor">
-                <span class="tab-icon">🕵️‍♂️</span>
+                <span class="tab-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                </span>
                 <span>Panel Auditor (Investigasi)</span>
                 <span class="counter-pill" id="auditorInboxCount">1</span>
             </button>
             <button class="nav-tab-btn" data-tab="tab-directory" id="navTabDirectory">
-                <span class="tab-icon">🏛️</span>
+                <span class="tab-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                </span>
                 <span>Direktori Civitas (Whitelist PK)</span>
             </button>
             <button class="nav-tab-btn" data-tab="tab-lab" id="navTabLab">
-                <span class="tab-icon">🔬</span>
+                <span class="tab-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+                </span>
                 <span>Laboratorium Kripto RSA (Math Inspector)</span>
             </button>
             <button class="nav-tab-btn" data-tab="tab-docs" id="navTabDocs">
-                <span class="tab-icon">📖</span>
-                <span>Arsitektur & Teori RSA</span>
+                <span class="tab-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                </span>
+                <span>Arsitektur &amp; Teori RSA</span>
             </button>
         </div>
     </nav>
@@ -89,7 +107,7 @@
                     <div class="card-header-flex">
                         <div>
                             <h2 class="card-title">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                     <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
                                 </svg>
                                 Formulir Pengaduan Terverifikasi
@@ -105,7 +123,7 @@
                             <!-- Diisi secara dinamis oleh JavaScript -->
                         </select>
                         <p class="form-hint">
-                            🔒 <strong>Jaminan Anonimitas:</strong> Identitas nama/NIM asli Anda <em>TIDAK</em> akan dikirimkan ke auditor. Sistem hanya memvalidasi bahwa Digital Signature Anda berasal dari salah satu kunci publik yang terdaftar di organisasi, dan Anda ditampilkan sebagai <strong>Pseudonym Terverifikasi</strong>.
+                            <strong>Jaminan Anonimitas:</strong> Identitas nama/NIM asli Anda <em>tidak</em> akan dikirimkan ke auditor. Sistem hanya memvalidasi bahwa Digital Signature Anda berasal dari salah satu kunci publik yang terdaftar di organisasi, dan Anda ditampilkan sebagai <strong>Pseudonym Terverifikasi</strong>.
                         </p>
                     </div>
 
@@ -113,7 +131,7 @@
                     <div class="form-group">
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
                             <label class="form-label" style="margin-bottom:0;" for="senderPrivateKeyInput">Kunci Privat Pengirim (d)</label>
-                            <span style="font-size:0.75rem; color:var(--accent-cyan); cursor:pointer;" id="btnToggleKeyVisibility">👁️ Tampilkan</span>
+                            <span style="font-size:0.75rem; color:var(--primary); cursor:pointer;" id="btnToggleKeyVisibility">Tampilkan</span>
                         </div>
                         <input type="password" id="senderPrivateKeyInput" class="form-input" style="font-family:var(--font-mono); font-size:0.85rem;" readonly>
                         <p class="form-hint">Digunakan untuk menghasilkan Tanda Tangan Digital RSA: \( S = H(M)^d \pmod n \)</p>
@@ -123,11 +141,11 @@
                     <div class="form-group">
                         <label class="form-label" for="reportCategory">Kategori Pelanggaran</label>
                         <select id="reportCategory" class="form-select">
-                            <option value="Korupsi & Pungli">Korupsi, Pungutan Liar & Gratifikasi</option>
-                            <option value="Kecurangan Akademik">Kecurangan Akademik & Plagiasi</option>
-                            <option value="Pelecehan & Etika">Pelanggaran Etika & Pelecehan</option>
-                            <option value="Penyalahgunaan Wewenang">Penyalahgunaan Wewenang & SOP</option>
-                            <option value="Saran & Masukan">Kotak Saran Konstruktif Organisasi</option>
+                            <option value="Korupsi &amp; Pungli">Korupsi, Pungutan Liar &amp; Gratifikasi</option>
+                            <option value="Kecurangan Akademik">Kecurangan Akademik &amp; Plagiasi</option>
+                            <option value="Pelecehan &amp; Etika">Pelanggaran Etika &amp; Pelecehan</option>
+                            <option value="Penyalahgunaan Wewenang">Penyalahgunaan Wewenang &amp; SOP</option>
+                            <option value="Saran &amp; Masukan">Kotak Saran Konstruktif Organisasi</option>
                         </select>
                     </div>
 
@@ -139,16 +157,16 @@
 
                     <!-- Isi Laporan -->
                     <div class="form-group">
-                        <label class="form-label" for="reportContent">Isi Narasi Pengaduan & Bukti (Rahasia)</label>
+                        <label class="form-label" for="reportContent">Isi Narasi Pengaduan &amp; Bukti (Rahasia)</label>
                         <textarea id="reportContent" class="form-textarea" rows="6" placeholder="Tuliskan kronologi kejadian, pihak yang terlibat, dan detail bukti yang Anda miliki...">Terdapat ketidaksesuaian spesifikasi komputer lab yang datang dibandingkan RAB pengadaan resmi fakultas. Pembayaran invoice tercatat untuk tipe Core i7, namun unit terpasang adalah Core i3 rekondisi tanpa segel resmi. Kami menyimpan salinan dokumen serah terima barang untuk audit forensik.</textarea>
                     </div>
 
-                    <button type="button" class="btn btn-emerald btn-block" id="btnSubmitReport" style="padding: 1rem; font-size: 1rem;">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <button type="button" class="btn btn-emerald btn-block" id="btnSubmitReport" style="padding: 0.9rem; font-size: 0.95rem;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
                             <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
                         </svg>
-                        Tanda Tangani & Enkripsi Laporan (RSA Manual)
+                        Tanda Tangani &amp; Enkripsi Laporan (RSA Manual)
                     </button>
                 </div>
 
@@ -157,7 +175,7 @@
                     <div class="card-header-flex">
                         <div>
                             <h2 class="card-title">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="2">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent-teal)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                     <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
                                 </svg>
                                 Live RSA Cryptographic Pipeline
@@ -196,7 +214,7 @@
                             <div class="step-num">3</div>
                             <div class="step-body">
                                 <div class="step-title">Enkripsi RSA ke Kunci Publik Auditor</div>
-                                <div class="step-desc">Teks dibagi ke dalam blok byte \( m < n \). Formula: \( c_i = (m_i^e) \bmod n_{\text{auditor}} \)</div>
+                                <div class="step-desc">Teks dibagi ke dalam blok byte \( m &lt; n \). Formula: \( c_i = (m_i^e) \bmod n_{\text{auditor}} \)</div>
                                 <div class="step-math" id="liveCipherPreview">
                                     Menunggu proses enkripsi blok...
                                 </div>
@@ -216,13 +234,13 @@
                         </div>
                     </div>
 
-                    <!-- Ringkasan Kunci Publik Auditor Penerima -->
-                    <div style="background:rgba(15,23,42,0.8); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:1rem; margin-top:1.25rem;">
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
-                            <span style="font-size:0.78rem; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Kunci Publik Auditor Tujuan (e, n)</span>
-                            <span class="badge-tag tag-cyan" style="padding:0.15rem 0.5rem; font-size:0.7rem;">Verified Auditor</span>
+                    <!-- Ringkasan Kunci Publik Auditor -->
+                    <div class="key-summary-box">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+                            <span style="font-size:0.75rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em;">Kunci Publik Auditor Tujuan (e, n)</span>
+                            <span class="badge-tag tag-cyan" style="padding:0.12rem 0.5rem; font-size:0.68rem;">Verified Auditor</span>
                         </div>
-                        <div style="font-family:var(--font-mono); font-size:0.75rem; color:#93c5fd; word-break:break-all;" id="submitAuditorKeySummary">
+                        <div style="font-family:var(--font-mono); font-size:0.75rem; color:var(--accent-teal); word-break:break-all;" id="submitAuditorKeySummary">
                             e: 65537<br>
                             n: 277514338902506692290518387063702116347
                         </div>
@@ -238,40 +256,40 @@
             <div class="card-header-flex">
                 <div>
                     <h2 class="card-title">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="2">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <circle cx="11" cy="11" r="8"/>
                             <line x1="21" y1="21" x2="16.65" y2="16.65"/>
                         </svg>
-                        Kotak Masuk Tim Auditor & Komite Etik
+                        Kotak Masuk Tim Auditor &amp; Komite Etik
                     </h2>
                     <p class="card-subtitle">Semua aduan terenkripsi aman secara end-to-end. Hanya auditor yang memiliki Kunci Privat yang dapat membaca isi aduan.</p>
                 </div>
-                <div style="display:flex; gap:0.75rem;">
+                <div style="display:flex; gap:0.6rem;">
                     <button class="btn btn-secondary btn-sm" id="btnShowAuditorKeyModal">
-                        🔑 Lihat / Kelola Kunci Auditor
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                        Lihat / Kelola Kunci Auditor
                     </button>
                     <button class="btn btn-secondary btn-sm" id="btnRefreshReports">
-                        🔄 Muat Ulang
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.54-3.13"/></svg>
+                        Muat Ulang
                     </button>
                 </div>
             </div>
 
             <!-- Auditor Status Box -->
-            <div class="glass-card" style="margin-bottom:1.5rem; background:linear-gradient(135deg, rgba(6,182,212,0.08), rgba(99,102,241,0.05)); border-color:rgba(6,182,212,0.3);">
-                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
-                    <div>
-                        <div style="font-size:0.8rem; text-transform:uppercase; font-weight:700; color:var(--accent-cyan); letter-spacing:0.05em;">Status Penerima Laporan</div>
-                        <div style="font-size:1.05rem; font-weight:700; color:#fff;" id="auditorPanelName">Komite Etik & Satgas Investigasi Independen</div>
-                        <div style="font-size:0.8rem; color:var(--text-muted); font-family:var(--font-mono);" id="auditorPanelKeyInfo">
-                            Modulus n: 128-bit &bull; Eksponen Publik e: 65537
-                        </div>
+            <div class="auditor-status-card">
+                <div>
+                    <div style="font-size:0.75rem; text-transform:uppercase; font-weight:700; color:var(--primary); letter-spacing:0.05em; margin-bottom:0.25rem;">Status Penerima Laporan</div>
+                    <div style="font-size:1rem; font-weight:700; color:var(--text-main);" id="auditorPanelName">Komite Etik &amp; Satgas Investigasi Independen</div>
+                    <div style="font-size:0.78rem; color:var(--text-muted); font-family:var(--font-mono); margin-top:0.2rem;" id="auditorPanelKeyInfo">
+                        Modulus n: 128-bit &bull; Eksponen Publik e: 65537
                     </div>
-                    <div>
-                        <span class="badge-tag tag-emerald">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-                            Kunci Privat Auditor Siap Digunakan
-                        </span>
-                    </div>
+                </div>
+                <div>
+                    <span class="badge-tag tag-emerald">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                        Kunci Privat Auditor Siap Digunakan
+                    </span>
                 </div>
             </div>
 
@@ -289,7 +307,7 @@
                 <div class="card-header-flex">
                     <div>
                         <h2 class="card-title">
-                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
                                 <circle cx="9" cy="7" r="4"/>
                                 <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
@@ -301,11 +319,11 @@
                     </div>
                     <div>
                         <button class="btn btn-primary" id="btnOpenNewMemberModal">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
                                 <line x1="12" y1="5" x2="12" y2="19"/>
                                 <line x1="5" y1="12" x2="19" y2="12"/>
                             </svg>
-                            Generate & Daftarkan Civitas Baru
+                            Generate &amp; Daftarkan Civitas Baru
                         </button>
                     </div>
                 </div>
@@ -313,7 +331,7 @@
                 <!-- Penjelasan Konsep Whitelist -->
                 <div class="math-formula-callout" style="margin-top:0; margin-bottom:1.5rem;">
                     <strong>Prinsip Verifikasi Identitas Tanpa Membocorkan Nama:</strong><br>
-                    Organisasi hanya menyimpan <em>Kunci Publik RSA</em> civitas dalam whitelist. Saat laporan masuk, auditor cukup memverifikasi apakah Digital Signature dapat didekripsi dengan salah satu Kunci Publik yang ada di tabel ini (\( V \equiv S^e \pmod n \)). Jika cocok, sistem menjamin 100% pengirim adalah civitas resmi, tanpa auditor mengetahui identitas nama asli pengadu!
+                    Organisasi hanya menyimpan <em>Kunci Publik RSA</em> civitas dalam whitelist. Saat laporan masuk, auditor cukup memverifikasi apakah Digital Signature dapat didekripsi dengan salah satu Kunci Publik yang ada di tabel ini (\( V \equiv S^e \pmod n \)). Jika cocok, sistem menjamin 100% pengirim adalah civitas resmi, tanpa auditor mengetahui identitas nama asli pengadu.
                 </div>
 
                 <div class="table-responsive">
@@ -321,7 +339,7 @@
                         <thead>
                             <tr>
                                 <th>ID Anggota</th>
-                                <th>Peran & Unit</th>
+                                <th>Peran &amp; Unit</th>
                                 <th>Kode Pseudonim</th>
                                 <th>Kunci Publik RSA (e, n)</th>
                                 <th>Tgl Terdaftar</th>
@@ -337,18 +355,18 @@
         </section>
 
         <!-- ==================================================================
-             TAB 4: RSA LABORATORY & MATH INSPECTOR (FITUR UNTUK DOSEN/NILAI)
+             TAB 4: RSA LABORATORY & MATH INSPECTOR
              ================================================================== -->
         <section id="tab-lab" class="tab-pane">
             <div class="card-header-flex">
                 <div>
                     <h2 class="card-title">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="2">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <polygon points="12 2 2 7 12 12 22 7 12 2"/>
                             <polyline points="2 17 12 22 22 17"/>
                             <polyline points="2 12 12 17 22 12"/>
                         </svg>
-                        RSA Cryptographic Laboratory & Math Inspector
+                        RSA Cryptographic Laboratory &amp; Math Inspector
                     </h2>
                     <p class="card-subtitle">Uji interaktif seluruh komponen matematika algoritma RSA manual tanpa library.</p>
                 </div>
@@ -366,8 +384,8 @@
             <div id="math-primes" class="math-pane active">
                 <div class="grid-2col">
                     <div class="glass-card">
-                        <h3 class="card-title" style="font-size:1.05rem;">Generator Bilangan Prima Acak Mandiri</h3>
-                        <p class="card-subtitle">Menggunakan Algoritma Pengujian Keprimaan Probabilistik Miller-Rabin.</p>
+                        <h3 class="card-title" style="font-size:1rem;">Generator Bilangan Prima Acak Mandiri</h3>
+                        <p class="card-subtitle" style="margin-bottom:1rem;">Menggunakan Algoritma Pengujian Keprimaan Probabilistik Miller-Rabin.</p>
 
                         <div class="math-formula-callout">
                             \( n - 1 = 2^s \cdot d \) di mana \( d \) ganjil.<br>
@@ -389,23 +407,24 @@
                         </div>
 
                         <button type="button" class="btn btn-primary btn-block" id="btnRunPrimeTest">
-                            ⚡ Bangkitkan Bilangan Prima & Uji
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                            Bangkitkan Bilangan Prima &amp; Uji
                         </button>
                     </div>
 
                     <div class="glass-card">
-                        <h3 class="card-title" style="font-size:1.05rem;">Hasil & Status Keprimaan</h3>
+                        <h3 class="card-title" style="font-size:1rem;">Hasil &amp; Status Keprimaan</h3>
                         <div class="form-group" style="margin-top:1rem;">
                             <label class="form-label">Bilangan Prima Ditemukan (Desimal):</label>
                             <div class="code-box" id="primeResultDecimal">Klik tombol bangkitkan untuk memulai...</div>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Representasi Biner / Bit Length:</label>
-                            <div class="code-box" id="primeResultBits" style="color:var(--accent-cyan);">-</div>
+                            <div class="code-box" id="primeResultBits" style="color:var(--accent-teal);">-</div>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Status Uji Miller-Rabin:</label>
-                            <div id="primeResultStatus" style="font-weight:600; font-size:0.9rem; color:var(--text-muted);">-</div>
+                            <div id="primeResultStatus" style="font-weight:600; font-size:0.88rem; color:var(--text-muted);">-</div>
                         </div>
                     </div>
                 </div>
@@ -416,17 +435,18 @@
                 <div class="glass-card">
                     <div class="card-header-flex">
                         <div>
-                            <h3 class="card-title" style="font-size:1.05rem;">Pembangkitan Pasangan Kunci RSA Lengkap</h3>
+                            <h3 class="card-title" style="font-size:1rem;">Pembangkitan Pasangan Kunci RSA Lengkap</h3>
                             <p class="card-subtitle">Perhitungan otomatis \( p, q, n, \phi(n), e, d \) beserta trace Algoritma Euclidean Diperluas.</p>
                         </div>
-                        <div>
+                        <div style="display:flex; align-items:center; gap:0.5rem;">
                             <select id="keygenBitSelect" class="form-select" style="width:auto; display:inline-block;">
                                 <option value="64">64-bit Key</option>
                                 <option value="128" selected>128-bit Key</option>
                                 <option value="256">256-bit Key</option>
                             </select>
-                            <button class="btn btn-emerald btn-sm" id="btnRunKeygenTrace" style="margin-left:0.5rem;">
-                                🚀 Generate Pasangan Kunci Baru
+                            <button class="btn btn-emerald btn-sm" id="btnRunKeygenTrace">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                                Generate Pasangan Kunci Baru
                             </button>
                         </div>
                     </div>
@@ -434,37 +454,37 @@
                     <div class="grid-2col" style="margin-top:1rem;">
                         <div>
                             <div class="math-card-item">
-                                <div style="font-size:0.78rem; text-transform:uppercase; color:var(--text-muted); font-weight:700;">1. Bilangan Prima Pertama (\( p \)):</div>
+                                <div style="font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); font-weight:700; margin-bottom:0.4rem;">1. Bilangan Prima Pertama (\( p \)):</div>
                                 <div class="code-box" id="traceP">-</div>
                             </div>
                             <div class="math-card-item">
-                                <div style="font-size:0.78rem; text-transform:uppercase; color:var(--text-muted); font-weight:700;">2. Bilangan Prima Kedua (\( q \)):</div>
+                                <div style="font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); font-weight:700; margin-bottom:0.4rem;">2. Bilangan Prima Kedua (\( q \)):</div>
                                 <div class="code-box" id="traceQ">-</div>
                             </div>
                             <div class="math-card-item">
-                                <div style="font-size:0.78rem; text-transform:uppercase; color:var(--text-muted); font-weight:700;">3. Modulus (\( n = p \times q \)):</div>
-                                <div class="code-box" id="traceN" style="color:#67e8f9;">-</div>
+                                <div style="font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); font-weight:700; margin-bottom:0.4rem;">3. Modulus (\( n = p \times q \)):</div>
+                                <div class="code-box" id="traceN" style="color:var(--accent-teal);">-</div>
                             </div>
                         </div>
 
                         <div>
                             <div class="math-card-item">
-                                <div style="font-size:0.78rem; text-transform:uppercase; color:var(--text-muted); font-weight:700;">4. Fungsi Euler Totient (\( \phi(n) = (p-1)(q-1) \)):</div>
+                                <div style="font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); font-weight:700; margin-bottom:0.4rem;">4. Fungsi Euler Totient (\( \phi(n) = (p-1)(q-1) \)):</div>
                                 <div class="code-box" id="tracePhi">-</div>
                             </div>
                             <div class="math-card-item">
-                                <div style="font-size:0.78rem; text-transform:uppercase; color:var(--text-muted); font-weight:700;">5. Eksponen Publik (\( e \), syarat: \( \gcd(e, \phi(n)) = 1 \)):</div>
-                                <div class="code-box" id="traceE" style="color:#a7f3d0;">65537</div>
+                                <div style="font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); font-weight:700; margin-bottom:0.4rem;">5. Eksponen Publik (\( e \), syarat: \( \gcd(e, \phi(n)) = 1 \)):</div>
+                                <div class="code-box" id="traceE" style="color:var(--primary);">65537</div>
                             </div>
                             <div class="math-card-item">
-                                <div style="font-size:0.78rem; text-transform:uppercase; color:var(--text-muted); font-weight:700;">6. Eksponen Privat (\( d = e^{-1} \bmod \phi(n) \) via Extended Euclidean):</div>
-                                <div class="code-box" id="traceD" style="color:#fbcfe8;">-</div>
+                                <div style="font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); font-weight:700; margin-bottom:0.4rem;">6. Eksponen Privat (\( d = e^{-1} \bmod \phi(n) \) via Extended Euclidean):</div>
+                                <div class="code-box" id="traceD" style="color:var(--accent-amber);">-</div>
                             </div>
                         </div>
                     </div>
 
                     <div style="margin-top:1.5rem;">
-                        <h4 style="font-size:0.9rem; font-weight:700; color:var(--accent-cyan); margin-bottom:0.75rem;">
+                        <h4 style="font-size:0.88rem; font-weight:700; color:var(--primary-dark); margin-bottom:0.75rem;">
                             Trace Langkah Algoritma Euclidean Diperluas (Extended Euclidean Steps):
                         </h4>
                         <div class="table-responsive">
@@ -492,7 +512,7 @@
             <!-- Sub-Pane 3: Square-and-Multiply Trace -->
             <div id="math-modpow" class="math-pane">
                 <div class="glass-card">
-                    <h3 class="card-title" style="font-size:1.05rem;">Visualizer Pemangkatan Modular (Square-and-Multiply)</h3>
+                    <h3 class="card-title" style="font-size:1rem;">Visualizer Pemangkatan Modular (Square-and-Multiply)</h3>
                     <p class="card-subtitle">Menghitung \( \text{base}^{\text{exponent}} \bmod \text{modulus} \) bit per bit tanpa memory overflow.</p>
 
                     <div class="grid-3col" style="margin-top:1.25rem;">
@@ -511,13 +531,14 @@
                     </div>
 
                     <button class="btn btn-primary" id="btnRunModpowTrace">
-                        ▶️ Jalankan Visualisasi Square-and-Multiply
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                        Jalankan Visualisasi Square-and-Multiply
                     </button>
 
                     <div style="margin-top:1.5rem;">
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
-                            <h4 style="font-size:0.9rem; font-weight:700; color:var(--accent-cyan);">Tabel Eksekusi Per-Bit:</h4>
-                            <div id="modpowFinalResult" style="font-family:var(--font-mono); font-size:0.85rem; color:#34d399; font-weight:700;"></div>
+                            <h4 style="font-size:0.88rem; font-weight:700; color:var(--primary-dark);">Tabel Eksekusi Per-Bit:</h4>
+                            <div id="modpowFinalResult" style="font-family:var(--font-mono); font-size:0.85rem; color:var(--primary); font-weight:700;"></div>
                         </div>
                         <div class="table-responsive">
                             <table class="custom-table">
@@ -543,8 +564,8 @@
             <!-- Sub-Pane 4: Tampering & Anti-Fraud Test -->
             <div id="math-tampering" class="math-pane">
                 <div class="glass-card">
-                    <h3 class="card-title" style="font-size:1.05rem;">Uji Integritas & Ketahanan Tanda Tangan Digital (Anti-Tampering)</h3>
-                    <p class="card-subtitle">Buktikan di depan dosen bagaimana perubahan 1 karakter saja pada dokumen akan langsung membatalkan tanda tangan digital RSA!</p>
+                    <h3 class="card-title" style="font-size:1rem;">Uji Integritas &amp; Ketahanan Tanda Tangan Digital (Anti-Tampering)</h3>
+                    <p class="card-subtitle">Buktikan bagaimana perubahan 1 karakter saja pada dokumen akan langsung membatalkan tanda tangan digital RSA.</p>
 
                     <div class="grid-2col" style="margin-top:1.25rem;">
                         <div>
@@ -553,7 +574,8 @@
                                 <textarea id="tamperOriginalText" class="form-textarea" rows="4">Saya melaporkan gratifikasi dana proyek sebesar Rp 50.000.000 kepada oknum panitia.</textarea>
                             </div>
                             <button class="btn btn-secondary btn-sm" id="btnGenerateTamperSignature">
-                                ✍️ Tandatangani Dokumen Asli dengan Kunci RSA
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                                Tandatangani Dokumen Asli dengan Kunci RSA
                             </button>
 
                             <div style="margin-top:1rem;">
@@ -565,16 +587,17 @@
                         <div>
                             <div class="form-group">
                                 <label class="form-label" style="color:var(--accent-rose);">Simulasi Pemalsuan Pesan (Coba ubah 1 karakter):</label>
-                                <textarea id="tamperManipulatedText" class="form-textarea" rows="4" style="border-color:rgba(244,63,94,0.4);">Saya melaporkan gratifikasi dana proyek sebesar Rp 50.000.000 kepada oknum panitia.</textarea>
+                                <textarea id="tamperManipulatedText" class="form-textarea" rows="4" style="border-color:rgba(192, 82, 74, 0.35);">Saya melaporkan gratifikasi dana proyek sebesar Rp 50.000.000 kepada oknum panitia.</textarea>
                             </div>
 
                             <button class="btn btn-emerald btn-sm" id="btnTestVerificationTamper">
-                                🔍 Verifikasi Ulang Tanda Tangan terhadap Pesan di Atas
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                                Verifikasi Ulang Tanda Tangan terhadap Pesan di Atas
                             </button>
 
-                            <div id="tamperResultCallout" style="margin-top:1rem; padding:1.25rem; border-radius:var(--radius-md); background:rgba(15,23,42,0.8); border:1px solid var(--border-color);">
-                                <div style="font-weight:700; font-size:0.95rem;" id="tamperResultTitle">Status Verifikasi: Belum Diuji</div>
-                                <div style="font-size:0.8rem; color:var(--text-muted); margin-top:0.4rem;" id="tamperResultDesc">
+                            <div id="tamperResultCallout" style="margin-top:1rem; padding:1.1rem 1.25rem; border-radius:var(--radius-md); background:var(--bg-page); border:1px solid var(--border-color);">
+                                <div style="font-weight:700; font-size:0.92rem; color:var(--text-main);" id="tamperResultTitle">Status Verifikasi: Belum Diuji</div>
+                                <div style="font-size:0.78rem; color:var(--text-muted); margin-top:0.35rem;" id="tamperResultDesc">
                                     Klik tombol verifikasi untuk membandingkan \( V \equiv S^e \pmod n \) dengan \( H(M') \).
                                 </div>
                             </div>
@@ -590,46 +613,46 @@
         <section id="tab-docs" class="tab-pane">
             <div class="glass-card">
                 <h2 class="card-title" style="margin-bottom:0.75rem;">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
                         <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
                     </svg>
-                    Dokumentasi Teknis & Pembuktian Manual Tanpa Library
+                    Dokumentasi Teknis &amp; Pembuktian Manual Tanpa Library
                 </h2>
                 <p class="card-subtitle" style="margin-bottom:1.5rem;">
-                    Panduan lengkap implementasi kriptografi asimetris RSA manual pada sistem Whistleblower & Kotak Saran Anonim Terverifikasi.
+                    Panduan lengkap implementasi kriptografi asimetris RSA manual pada sistem Whistleblower &amp; Kotak Saran Anonim Terverifikasi.
                 </p>
 
                 <div class="grid-2col">
                     <div>
-                        <h3 style="color:#fff; font-size:1rem; margin-bottom:0.5rem;">1. Masalah Nyata yang Diselesaikan</h3>
-                        <p style="font-size:0.88rem; color:var(--text-muted); margin-bottom:1rem;">
+                        <h3 style="color:var(--primary-dark); font-size:0.98rem; margin-bottom:0.5rem; font-weight:700;">1. Masalah Nyata yang Diselesaikan</h3>
+                        <p style="font-size:0.86rem; color:var(--text-muted); margin-bottom:1rem; line-height:1.7;">
                             Dalam pelaporan pelanggaran etika dan kecurangan organisasi, terdapat trade-off kritis: jika laporan sepenuhnya anonim tanpa otentikasi, sistem rawan serangan spam, hoax, dan fitnah pihak luar. Namun jika pelapor harus mencantumkan nama, pelapor takut terhadap retaliasi dan intimidasi.
                         </p>
-                        <p style="font-size:0.88rem; color:var(--text-muted); margin-bottom:1.5rem;">
-                            <strong>Solusi Kriptografis Kami:</strong> Menggabungkan <em>RSA Digital Signature</em> dengan <em>Whitelist Public Key</em> untuk membuktikan keabsahan status keanggotaan civitas tanpa mengungkap nama pengirim, serta <em>RSA Asymmetric Encryption</em> untuk memastikan hanya komite auditor yang dapat membuka isi aduan.
+                        <p style="font-size:0.86rem; color:var(--text-muted); margin-bottom:1.5rem; line-height:1.7;">
+                            <strong>Solusi Kriptografis:</strong> Menggabungkan <em>RSA Digital Signature</em> dengan <em>Whitelist Public Key</em> untuk membuktikan keabsahan status keanggotaan civitas tanpa mengungkap nama pengirim, serta <em>RSA Asymmetric Encryption</em> untuk memastikan hanya komite auditor yang dapat membuka isi aduan.
                         </p>
 
-                        <h3 style="color:#fff; font-size:1rem; margin-bottom:0.5rem;">2. Pembuktian Kriptografi Murni Tanpa Library</h3>
+                        <h3 style="color:var(--primary-dark); font-size:0.98rem; margin-bottom:0.5rem; font-weight:700;">2. Pembuktian Kriptografi Murni Tanpa Library</h3>
                         <div style="font-size:0.85rem; color:var(--text-muted);">
-                            <ul style="padding-left:1.25rem; line-height:1.7;">
+                            <ul style="padding-left:1.25rem; line-height:1.85;">
                                 <li><strong>Miller-Rabin Primality:</strong> Ditulis murni di <code>js/rsa.js</code> untuk pengujian probabilistik bilangan prima besar.</li>
-                                <li><strong>Algoritma Euclidean Diperluas:</strong> Ditulis murni untuk mencari koefisien Bézout dan invers perkalian modulo \( d = e^{-1} \pmod{\phi(n)} \).</li>
+                                <li><strong>Algoritma Euclidean Diperluas:</strong> Ditulis murni untuk mencari koefisien Bezout dan invers perkalian modulo \( d = e^{-1} \pmod{\phi(n)} \).</li>
                                 <li><strong>Square-and-Multiply:</strong> Ditulis manual untuk operasi pemangkatan modular \( O(\log \text{exp}) \) tanpa overflow.</li>
-                                <li><strong>Chunking Blok Pesan:</strong> Memecah pesan string UTF-8 ke byte array lalu ke BigInt dengan ukuran blok \( m < n \).</li>
-                                <li><strong>Manual SHA-256:</strong> Ditulis murni di <code>js/sha256.js</code> sesuai standar FIPS PUB 180-4 (64 rounds, bitwise rotate & shift) tanpa menggunakan WebCrypto API.</li>
+                                <li><strong>Chunking Blok Pesan:</strong> Memecah pesan string UTF-8 ke byte array lalu ke BigInt dengan ukuran blok \( m &lt; n \).</li>
+                                <li><strong>Manual SHA-256:</strong> Ditulis murni di <code>js/sha256.js</code> sesuai standar FIPS PUB 180-4 (64 rounds, bitwise rotate &amp; shift) tanpa menggunakan WebCrypto API.</li>
                             </ul>
                         </div>
                     </div>
 
                     <div>
-                        <h3 style="color:#fff; font-size:1rem; margin-bottom:0.5rem;">3. Rangkuman Formula Matematis RSA</h3>
-                        <div class="math-formula-callout" style="line-height:1.8; font-size:0.85rem;">
+                        <h3 style="color:var(--primary-dark); font-size:0.98rem; margin-bottom:0.5rem; font-weight:700;">3. Rangkuman Formula Matematis RSA</h3>
+                        <div class="math-formula-callout" style="line-height:1.9; font-size:0.86rem;">
                             <strong>Pembangkitan Kunci:</strong><br>
-                            &bull; Pilih bilangan prima \( p \) dan \( q \) (\( p \neq q \))<br>
+                            &bull; Pilih bilangan prima \( p \) dan \( q \) dengan \( p \neq q \)<br>
                             &bull; \( n = p \times q \)<br>
                             &bull; \( \phi(n) = (p - 1)(q - 1) \)<br>
-                            &bull; Pilih \( e \) sedemikian sehingga \( 1 < e < \phi(n) \) dan \( \gcd(e, \phi(n)) = 1 \)<br>
+                            &bull; Pilih \( e \) sedemikian sehingga \( 1 &lt; e &lt; \phi(n) \) dan \( \gcd(e, \phi(n)) = 1 \)<br>
                             &bull; Hitung \( d \) sehingga \( e \cdot d \equiv 1 \pmod{\phi(n)} \)<br>
                             <br>
                             <strong>Kerahasiaan Isi Aduan (Enkripsi Asimetris):</strong><br>
@@ -691,12 +714,13 @@
                 </select>
             </div>
 
-            <div id="keygenProgress" style="display:none; margin:1rem 0; font-size:0.85rem; color:var(--accent-cyan);">
-                <span class="dot-pulse"></span> Sedang membangkitkan bilangan prima p & q dengan Miller-Rabin...
+            <div id="keygenProgress" style="display:none; margin:1rem 0; font-size:0.85rem; color:var(--primary);">
+                <span class="dot-pulse"></span> Sedang membangkitkan bilangan prima p &amp; q dengan Miller-Rabin...
             </div>
 
             <button type="button" class="btn btn-emerald btn-block" id="btnGenerateSaveMember">
-                🔐 Bangkitkan Kunci RSA & Simpan ke Whitelist
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                Bangkitkan Kunci RSA &amp; Simpan ke Whitelist
             </button>
         </div>
     </div>
@@ -719,15 +743,17 @@
 
             <div class="form-group">
                 <label class="form-label">Kunci Privat Auditor (d):</label>
-                <div class="code-box" id="modalAuditorPrivateKey" style="color:#fbcfe8;">-</div>
+                <div class="code-box" id="modalAuditorPrivateKey" style="color:var(--accent-amber);">-</div>
             </div>
 
-            <div style="margin-top:1.5rem; display:flex; gap:0.75rem;">
+            <div style="margin-top:1.5rem; display:flex; gap:0.6rem;">
                 <button type="button" class="btn btn-primary" id="btnRegenerateAuditorKeys">
-                    🔄 Bangkitkan Ulang Pasangan Kunci Auditor
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.54-3.13"/></svg>
+                    Bangkitkan Ulang Pasangan Kunci Auditor
                 </button>
                 <button type="button" class="btn btn-secondary" id="btnResetAllData">
-                    ⚠️ Reset Database ke Bawaan
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+                    Reset Database ke Bawaan
                 </button>
             </div>
         </div>
