@@ -5,7 +5,7 @@
  */
 
 const CivitasStore = (function () {
-    const STORAGE_KEY = 'aegisbox_whistleblower_data_v1';
+    const STORAGE_KEY = 'aegisbox_whistleblower_data_v2';
 
     // Data Awal Bawaan (Default Seed Data)
     // Dibuat dengan pasangan kunci RSA valid sehingga aplikasi langsung bisa dicoba tanpa setup manual.
@@ -158,9 +158,9 @@ const CivitasStore = (function () {
             cipherBlocks: encResult.cipherBlocks,
             blockSize: encResult.blockSize,
             submittedAt: "2026-10-06T10:15:00.000Z",
-            status: "Dalam Investigasi",
-            statusNote: "Tanda tangan kriptografis valid. Investigasi internal sedang dilakukan oleh Komite Etik.",
-            auditorFeedback: "Laporan telah diverifikasi keasliannya dari anggota terdaftar. Tim auditor telah memanggil pihak terkait untuk klarifikasi pembukuan."
+            status: "Menunggu Tinjauan",
+            statusNote: "Laporan baru diterima. Terenkripsi dengan Kunci Publik Auditor.",
+            auditorFeedback: null
         };
 
         data.reports = [sampleReport];
@@ -223,13 +223,19 @@ const CivitasStore = (function () {
     /**
      * Perbarui status atau tanggapan auditor pada laporan
      */
-    function updateReportStatus(reportId, newStatus, auditorFeedback = null) {
+    function updateReportStatus(reportId, newStatus, auditorFeedback = null, statusNote = null, decryptedData = null) {
         const data = loadData();
         const rpt = data.reports.find(r => r.id === reportId);
         if (rpt) {
-            rpt.status = newStatus;
+            if (newStatus) rpt.status = newStatus;
             if (auditorFeedback !== null) {
                 rpt.auditorFeedback = auditorFeedback;
+            }
+            if (statusNote !== null) {
+                rpt.statusNote = statusNote;
+            }
+            if (decryptedData !== null) {
+                rpt.decryptedData = decryptedData;
             }
             saveData(data);
             return rpt;

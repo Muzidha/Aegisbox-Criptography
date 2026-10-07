@@ -185,17 +185,33 @@ const ManualRSA = (function () {
     }
 
     /**
+     * Menghasilkan BigInt acak dalam rentang [0, maxLimit]
+     */
+    function randomBigIntLimit(maxLimit) {
+        if (maxLimit <= 0n) return 0n;
+        const bitLen = maxLimit.toString(2).length;
+        const bytesCount = Math.ceil(bitLen / 8);
+        const mask = (1n << BigInt(bitLen)) - 1n;
+        while (true) {
+            let hex = '';
+            for (let i = 0; i < bytesCount; i++) {
+                const byte = Math.floor(Math.random() * 256);
+                hex += byte.toString(16).padStart(2, '0');
+            }
+            const val = BigInt('0x' + (hex || '0')) & mask;
+            if (val <= maxLimit) {
+                return val;
+            }
+        }
+    }
+
+    /**
      * Bilangan acak BigInt dalam rentang [min, max]
      */
     function randomBigIntRange(min, max) {
+        if (max <= min) return min;
         const range = max - min;
-        if (range <= 0n) return min;
-        const bitLen = range.toString(2).length;
-        let rand;
-        do {
-            rand = randomBigIntBits(bitLen);
-        } while (rand > range);
-        return min + rand;
+        return min + randomBigIntLimit(range);
     }
 
     /**

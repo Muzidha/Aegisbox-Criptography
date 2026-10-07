@@ -49,9 +49,26 @@ document.addEventListener('DOMContentLoaded', () => {
         const badgeRep = document.getElementById('reportCountBadge');
         const inboxCount = document.getElementById('auditorInboxCount');
 
+        const pendingReports = reports.filter(r => r.status === 'Menunggu Tinjauan');
+
         if (badgeMem) badgeMem.textContent = `${members.length} Civitas Whitelist`;
-        if (badgeRep) badgeRep.textContent = `${reports.length} Laporan Diterima`;
-        if (inboxCount) inboxCount.textContent = reports.length;
+        if (badgeRep) {
+            badgeRep.textContent = pendingReports.length > 0 
+                ? `${reports.length} Laporan (${pendingReports.length} Menunggu)`
+                : `${reports.length} Laporan (Semua Terverifikasi)`;
+        }
+        if (inboxCount) {
+            inboxCount.textContent = pendingReports.length;
+            if (pendingReports.length === 0) {
+                inboxCount.style.background = '#10b981';
+                inboxCount.style.color = '#ffffff';
+                inboxCount.title = 'Semua laporan telah diverifikasi';
+            } else {
+                inboxCount.style.background = '';
+                inboxCount.style.color = '';
+                inboxCount.title = `${pendingReports.length} laporan menunggu verifikasi`;
+            }
+        }
     }
 
     // =========================================================================
@@ -272,7 +289,7 @@ document.addEventListener('DOMContentLoaded', () => {
             container.innerHTML = `
                 <div class="glass-card" style="text-align:center; padding:3rem 1rem;">
                     <div style="font-size:2.5rem; margin-bottom:0.75rem;">📭</div>
-                    <h3 style="color:#fff;">Belum Ada Laporan Masuk</h3>
+                    <h3 style="color:var(--primary-dark);">Belum Ada Laporan Masuk</h3>
                     <p style="color:var(--text-muted); font-size:0.9rem; margin-top:0.25rem;">
                         Semua laporan whistleblower terenkripsi akan muncul di sini.
                     </p>
@@ -284,8 +301,8 @@ document.addEventListener('DOMContentLoaded', () => {
         container.innerHTML = '';
 
         reports.forEach(rpt => {
-            const isDecrypted = Boolean(decryptedReportsMap[rpt.id]);
-            const decryptedData = decryptedReportsMap[rpt.id] || null;
+            const isDecrypted = Boolean(decryptedReportsMap[rpt.id] || rpt.decryptedData);
+            const decryptedData = decryptedReportsMap[rpt.id] || rpt.decryptedData || null;
 
             // Cek apakah public key pengirim terdaftar di Whitelist Civitas
             const matchedMember = CivitasStore.findMemberByPublicKey(rpt.senderPublicKey);
@@ -297,6 +314,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Bangun Ciphertext preview string
             const cipherPreviewStr = rpt.cipherBlocks.map(b => '0x' + b.cHex).join(' ');
+
+            const isVerified = rpt.status === 'Terverifikasi & Didekripsi' || isDecrypted;
+            const statusBadgeClass = isVerified ? 'tag-emerald' : (rpt.status === 'Ditolak' ? 'tag-rose' : 'tag-purple');
+            const statusLabel = isVerified ? '✅ Terverifikasi & Didekripsi' : `⏳ ${rpt.status}`;
 
             card.innerHTML = `
                 <div class="report-card-top">
@@ -315,13 +336,13 @@ document.addEventListener('DOMContentLoaded', () => {
                             `}
                             <span style="font-size:0.78rem; color:var(--text-dim);">${new Date(rpt.submittedAt).toLocaleString('id-ID')}</span>
                         </div>
-                        <h3 style="color:#fff; font-size:1.15rem; margin-top:0.5rem;">${escapeHtml(rpt.title)}</h3>
+                        <h3 style="color:var(--text-main, #111827); font-size:1.15rem; margin-top:0.5rem; font-weight:700;">${escapeHtml(rpt.title)}</h3>
                         <div style="font-size:0.8rem; color:var(--text-muted); margin-top:0.2rem;">
                             Kategori: <strong>${escapeHtml(rpt.category)}</strong> &bull; ID: <code>${rpt.id}</code>
                         </div>
                     </div>
                     <div>
-                        <span class="badge-tag tag-purple">${escapeHtml(rpt.status)}</span>
+                        <span class="badge-tag ${statusBadgeClass}">${statusLabel}</span>
                     </div>
                 </div>
 
@@ -331,9 +352,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
 
                 <!-- Formulir Tindak Lanjut Auditor -->
-                <div style="margin-top:1.25rem; padding-top:1rem; border-top:1px solid rgba(255,255,255,0.06); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem;">
-                    <div style="font-size:0.8rem; color:var(--text-muted);">
-                        Status: <em>${rpt.statusNote || 'Tanda tangan kriptografis RSA melekat'}</em>
+                <div style="margin-top:1.25rem; padding-top:1rem; border-top:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem;">
+                    <div style="font-size:0.82rem; color:var(--text-muted);">
+                        Catatan Sistem: <em>${escapeHtml(rpt.statusNote || 'Tanda tangan kriptografis RSA melekat')}</em>
                     </div>
                     <div style="display:flex; gap:0.5rem;">
                         <button class="btn btn-secondary btn-sm" onclick="promptUpdateStatus('${rpt.id}')">
@@ -375,31 +396,34 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderDecryptedView(rpt, dec) {
         return `
             <div class="decrypted-box">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem; border-bottom:1px solid rgba(16,185,129,0.2); padding-bottom:0.5rem;">
-                    <div style="font-size:0.85rem; font-weight:700; color:#34d399; display:flex; align-items:center; gap:0.4rem;">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                        Laporan Berhasil Didekripsi & Tanda Tangan Terverifikasi Sah!
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem; border-bottom:1px solid rgba(16,185,129,0.3); padding-bottom:0.5rem; flex-wrap:wrap; gap:0.5rem;">
+                    <div style="font-size:0.88rem; font-weight:700; color:#059669; display:flex; align-items:center; gap:0.4rem;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                        Laporan Berhasil Didekripsi &amp; Tanda Tangan Terverifikasi Sah!
                     </div>
-                    <span class="badge-tag tag-cyan" style="font-size:0.72rem;">RSA Decrypt: m = c^d mod n</span>
+                    <span class="badge-tag tag-cyan" style="font-size:0.75rem;">RSA Decrypt: m = c^d mod n</span>
                 </div>
 
-                <div style="font-size:0.95rem; line-height:1.6; white-space:pre-wrap; color:#f3f4f6;">
-                    ${escapeHtml(dec.plaintext)}
+                <div style="margin: 0.75rem 0 0.4rem 0; font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em;">
+                    📄 Hasil Plainteks Dokumen Asli (Setelah Didekripsi):
+                </div>
+                <div style="font-size: 1rem; line-height: 1.7; white-space: pre-wrap; color: #0f172a !important; background: #ffffff !important; border: 2px solid #10b981; border-radius: 8px; padding: 1.1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06); font-family: var(--font-ui); font-weight: 500;">
+${escapeHtml(dec.plaintext)}
                 </div>
 
                 <!-- Bukti Matematis Verifikasi Tanda Tangan -->
-                <div style="background:rgba(15,23,42,0.8); border:1px solid rgba(255,255,255,0.06); border-radius:var(--radius-sm); padding:0.75rem; margin-top:1rem; font-family:var(--font-mono); font-size:0.75rem;">
-                    <div style="color:var(--accent-cyan); font-weight:700; margin-bottom:0.3rem;">
-                        Verifikasi Kriptografis RSA Digital Signature:
+                <div style="background: rgba(15,23,42,0.92); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 0.9rem; margin-top: 1rem; font-family: var(--font-mono); font-size: 0.78rem; color: #f1f5f9;">
+                    <div style="color: #38bdf8; font-weight: 700; margin-bottom: 0.4rem;">
+                        Bukti Matematis Verifikasi Kriptografis RSA Digital Signature:
                     </div>
-                    <div>&bull; Hash Dokumen Asli H(M): <code>${dec.currentHashHex.slice(0, 32)}...</code></div>
-                    <div>&bull; Nilai Dekripsi Signature V = (S^e mod n): <code>${dec.verifiedV}</code></div>
-                    <div>&bull; Status Kecocokan V == H: <strong style="color:#34d399;">VALID (100% Cocok, Integritas Dokumen Terjamin)</strong></div>
-                    <div>&bull; Keabsahan Pengirim: <strong style="color:#34d399;">Civitas Terverifikasi pada Whitelist Organisasi</strong></div>
+                    <div>&bull; Hash Dokumen Asli H(M): <code style="color: #93c5fd; background: transparent;">${dec.currentHashHex.slice(0, 32)}...</code></div>
+                    <div>&bull; Nilai Dekripsi Signature V = (S^e mod n): <code style="color: #93c5fd; background: transparent;">${dec.verifiedV}</code></div>
+                    <div>&bull; Status Kecocokan V == H: <strong style="color: #34d399;">VALID (100% Cocok, Integritas Terjamin)</strong></div>
+                    <div>&bull; Keabsahan Pengirim: <strong style="color: #34d399;">Civitas Terdaftar pada Whitelist Resmi Organisasi</strong></div>
                 </div>
 
                 ${rpt.auditorFeedback ? `
-                    <div style="margin-top:1rem; padding:0.75rem; background:rgba(99,102,241,0.1); border-left:3px solid var(--primary); border-radius:4px; font-size:0.85rem;">
+                    <div style="margin-top: 1rem; padding: 0.85rem; background: rgba(99,102,241,0.08); border-left: 4px solid var(--primary); border-radius: 4px; font-size: 0.88rem; color: var(--text-main);">
                         <strong>Tanggapan Resmi Auditor:</strong> ${escapeHtml(rpt.auditorFeedback)}
                     </div>
                 ` : ''}
@@ -423,15 +447,25 @@ document.addEventListener('DOMContentLoaded', () => {
             const sigCheck = ManualRSA.verifySignature(decResult.plaintext, rpt.signatureHex, rpt.senderPublicKey);
 
             // Simpan status dekripsi di memori
-            decryptedReportsMap[reportId] = {
+            const decData = {
                 plaintext: decResult.plaintext,
                 currentHashHex: sigCheck.currentHashHex,
                 verifiedV: sigCheck.verifiedV,
                 isValid: sigCheck.isValid
             };
+            decryptedReportsMap[reportId] = decData;
 
-            showToast(`Laporan ${reportId} berhasil didekripsi & diverifikasi!`);
+            // Update status laporan di Store!
+            const newStatus = sigCheck.isValid ? "Terverifikasi & Didekripsi" : "Verifikasi Gagal";
+            const note = sigCheck.isValid
+                ? "Tanda tangan kriptografis RSA valid (Pengirim sah). Laporan telah didekripsi utuh."
+                : "Peringatan: Tanda tangan kriptografis tidak cocok!";
+
+            CivitasStore.updateReportStatus(reportId, newStatus, null, note, decData);
+
+            showToast(`Laporan ${reportId} berhasil didekripsi & status diperbarui!`);
             renderAuditorPanel();
+            updateHeaderBadges();
 
         } catch (e) {
             console.error("Gagal mendekripsi laporan:", e);
@@ -473,8 +507,8 @@ document.addEventListener('DOMContentLoaded', () => {
             tr.innerHTML = `
                 <td><strong>${escapeHtml(m.id)}</strong></td>
                 <td>
-                    <div style="font-weight:600; color:#fff;">${escapeHtml(m.alias)}</div>
-                    <div style="font-size:0.78rem; color:var(--text-muted);">${escapeHtml(m.role)} &bull; ${escapeHtml(m.unit)}</div>
+                    <div style="font-weight:800; color:#000000 !important; font-size:0.95rem;">${escapeHtml(m.alias)}</div>
+                    <div style="font-size:0.78rem; color:#5c5a54 !important;">${escapeHtml(m.role)} &bull; ${escapeHtml(m.unit)}</div>
                 </td>
                 <td><span class="pseudonym-tag">${escapeHtml(m.pseudonymCode)}</span></td>
                 <td>
@@ -519,6 +553,12 @@ document.addEventListener('DOMContentLoaded', () => {
         memberModal.classList.remove('open');
     });
 
+    memberModal.addEventListener('click', (e) => {
+        if (e.target === memberModal) {
+            memberModal.classList.remove('open');
+        }
+    });
+
     btnGenerateSave.addEventListener('click', () => {
         const alias = document.getElementById('newMemberAlias').value.trim();
         const role = document.getElementById('newMemberRole').value;
@@ -533,6 +573,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         progress.style.display = 'block';
         btnGenerateSave.disabled = true;
+        btnGenerateSave.innerHTML = `
+            <span class="dot-pulse" style="margin-right:8px;"></span>
+            Sedang Menghitung Kunci RSA (${bits}-bit)...
+        `;
 
         setTimeout(() => {
             try {
@@ -558,6 +602,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 progress.style.display = 'none';
                 btnGenerateSave.disabled = false;
+                btnGenerateSave.innerHTML = `
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    Bangkitkan Kunci RSA &amp; Simpan ke Whitelist
+                `;
+
+                // Reset field form
+                document.getElementById('newMemberAlias').value = 'Civitas #MHS-' + Math.floor(100000 + Math.random() * 900000);
+                document.getElementById('newMemberUnit').value = '';
+
                 memberModal.classList.remove('open');
 
                 showToast(`Civitas ${alias} berhasil didaftarkan dengan Kunci RSA ${bits}-bit!`);
@@ -568,9 +621,13 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch (err) {
                 progress.style.display = 'none';
                 btnGenerateSave.disabled = false;
+                btnGenerateSave.innerHTML = `
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    Bangkitkan Kunci RSA &amp; Simpan ke Whitelist
+                `;
                 showToast(`Gagal membangkitkan kunci: ${err.message}`, 'error');
             }
-        }, 100);
+        }, 50);
     });
 
     // =========================================================================
@@ -593,6 +650,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     btnCloseAuditorModal.addEventListener('click', () => {
         auditorModal.classList.remove('open');
+    });
+
+    auditorModal.addEventListener('click', (e) => {
+        if (e.target === auditorModal) {
+            auditorModal.classList.remove('open');
+        }
     });
 
     btnRegenAuditor.addEventListener('click', () => {
@@ -649,7 +712,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     decBox.textContent = prime.toString();
                     bitsBox.textContent = `Biner: ${prime.toString(2)}\nPanjang: ${prime.toString(2).length} bit`;
                     statusBox.innerHTML = `
-                        <span style="color:#34d399;">✅ Lolos ${rounds} Putaran Uji Miller-Rabin (Probabilitas Prima: > 99.999999%)</span>
+                        <span style="color:#059669;">✅ Lolos ${rounds} Putaran Uji Miller-Rabin (Probabilitas Prima: > 99.999999%)</span>
                     `;
                     showToast('Bilangan prima berhasil dibangkitkan!');
                 } catch (e) {
@@ -769,7 +832,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (verification.isValid) {
                     resCallout.style.borderColor = 'rgba(16,185,129,0.5)';
                     resCallout.style.background = 'rgba(16,185,129,0.08)';
-                    resTitle.innerHTML = `<span style="color:#34d399;">✅ TANDA TANGAN VALID - DOKUMEN ASLI & TIDAK BERUBAH</span>`;
+                    resTitle.innerHTML = `<span style="color:#059669;">✅ TANDA TANGAN VALID - DOKUMEN ASLI & TIDAK BERUBAH</span>`;
                     resDesc.innerHTML = `
                         Nilai rekonstruksi V = (S^e mod n) (${verification.verifiedV}) sama persis dengan hash teks H(M') (${verification.expectedH}).<br>
                         Integritas data terbukti utuh!
