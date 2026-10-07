@@ -8,7 +8,7 @@
 
 > - **Anggota 1**      : Muhammad Ziddan Habibi — NRP: 5027241122 
 > - **Anggota 2**      : M.Faqih Ridho — NRP : 5027241123
-> - **Anggota 2**      : Muhammad Ahsani Taqwim — NRP : [Nomor Induk Mahasiswa]
+> - **Anggota 2**      : Muhammad Ahsani Taqwim — NRP : 5027241099
 > - **Mata Kuliah**    : Kriptografi
 
 
