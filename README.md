@@ -5,13 +5,12 @@
 ---
 
 > ### 📋 IDENTITAS KELOMPOK
-> - **Kelompok** : Kelompok [X] *(Silakan isi nomor kelompok Anda)*
-> - **Ketua Kelompok** : [Nama Lengkap Ketua] — NIM: [Nomor Induk Mahasiswa]
-> - **Anggota 1**      : [Nama Anggota 1] — NIM: [Nomor Induk Mahasiswa]
-> - **Anggota 2**      : [Nama Anggota 2] — NIM: [Nomor Induk Mahasiswa]
+
+> - **Anggota 1**      : Muhammad Ziddan Habibi — NRP: 5027241122 
+> - **Anggota 2**      : M.Faqih Ridho — NRP : 5027241123
+> - **Anggota 2**      : Muhammad Ahsani Taqwim — NRP : [Nomor Induk Mahasiswa]
 > - **Mata Kuliah**    : Kriptografi
-> - **Batas Pengumpulan**: **Kamis, 8 Oktober — Maksimal Pukul 09.40 WIB**
-> - **Format Pengumpulan**: Arsip berkas **ZIP** (Dikumpulkan melalui akun Ketua Kelompok)
+
 
 ---
 
