@@ -17,6 +17,9 @@ document.addEventListener('DOMContentLoaded', () => {
     initTabs();
     initSenderDropdown();
     initLivePipeline();
+    initQuickPresets();
+    initGuideModal();
+    initQuickReset();
     renderAuditorPanel();
     renderDirectoryTable();
     initLabComponents();
@@ -145,9 +148,80 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function updateSenderKeyInput() {
         const keyInput = document.getElementById('senderPrivateKeyInput');
-        if (selectedSender && keyInput) {
-            keyInput.value = selectedSender.privateKey.d;
+        const pseudoHighlight = document.getElementById('senderPseudonymHighlight');
+        if (selectedSender) {
+            if (keyInput) keyInput.value = selectedSender.privateKey.d;
+            if (pseudoHighlight) pseudoHighlight.textContent = selectedSender.pseudonymCode;
         }
+    }
+
+    function initQuickPresets() {
+        const presets = {
+            lab: {
+                title: "Dugaan Manipulasi Pengadaan Alat Lab Komputer Semester Ini",
+                category: "Korupsi & Pungli",
+                content: "Terdapat ketidaksesuaian spesifikasi komputer lab yang datang dibandingkan RAB pengadaan resmi fakultas. Pembayaran invoice tercatat untuk tipe Core i7, namun unit terpasang adalah Core i3 rekondisi tanpa segel resmi. Kami menyimpan salinan dokumen serah terima barang untuk audit forensik."
+            },
+            exam: {
+                title: "Praktik Sindikat Joki Ujian Akhir dan Pembocoran Kunci Jawaban",
+                category: "Kecurangan Akademik",
+                content: "Teridentifikasi sindikat berbayar yang menawarkan pengerjaan ujian akhir daring dan joki tugas besar di beberapa mata kuliah dasar bersama. Terdapat bukti tangkapan layar transaksi pembayaran e-wallet dan link grup chat rahasia tempat pembagian kunci jawaban."
+            },
+            facility: {
+                title: "Usulan Perbaikan Jalur Evakuasi dan Fasilitas Disabilitas Gedung Kuliah",
+                category: "Saran & Masukan",
+                content: "Sebagian besar jalur akses kursi roda di Gedung Perkuliahan Bersama terhalang oleh parkir motor liar dan tangga darurat lantai 3 terkunci selama jam kuliah aktif. Mohon inspeksi sarana keselamatan gedung dan pembersihan aksesibilitas bagi civitas disabilitas."
+            }
+        };
+
+        const presetBtns = document.querySelectorAll('.preset-btn');
+        presetBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const key = btn.getAttribute('data-preset');
+                const data = presets[key];
+                if (!data) return;
+
+                document.getElementById('reportTitle').value = data.title;
+                document.getElementById('reportCategory').value = data.category;
+                document.getElementById('reportContent').value = data.content;
+
+                triggerLivePipelineUpdate();
+                showToast(`Contoh aduan "${data.title.slice(0, 28)}..." dimuat!`);
+            });
+        });
+    }
+
+    function initGuideModal() {
+        const modal = document.getElementById('guideModal');
+        const btnOpen = document.getElementById('btnOpenGuideModal');
+        const btnClose = document.getElementById('btnCloseGuideModal');
+        const btnGotIt = document.getElementById('btnGotItGuide');
+
+        if (!modal) return;
+
+        btnOpen?.addEventListener('click', () => modal.classList.add('open'));
+        btnClose?.addEventListener('click', () => modal.classList.remove('open'));
+        btnGotIt?.addEventListener('click', () => modal.classList.remove('open'));
+
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) modal.classList.remove('open');
+        });
+    }
+
+    function initQuickReset() {
+        const btn = document.getElementById('btnQuickReset');
+        if (!btn) return;
+
+        btn.addEventListener('click', () => {
+            if (!confirm('Kembalikan semua data simulasi ke setelan awal pabrik (reset data)?')) return;
+            CivitasStore.resetToDefault();
+            decryptedReportsMap = {};
+            showToast('Data simulasi berhasil dikembalikan ke bawaan!');
+            initSenderDropdown();
+            renderAuditorPanel();
+            renderDirectoryTable();
+            updateHeaderBadges();
+        });
     }
 
     function initLivePipeline() {
@@ -371,9 +445,9 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderEncryptedView(rpt, cipherPreviewStr) {
         return `
             <div style="margin:1rem 0;">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <span style="font-size:0.78rem; text-transform:uppercase; font-weight:700; color:var(--accent-rose);">
-                        🔒 Ciphertext Terenkripsi RSA (${rpt.cipherBlocks.length} Blok)
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
+                    <span style="font-size:0.8rem; text-transform:uppercase; font-weight:700; color:var(--accent-amber); display:flex; align-items:center; gap:0.4rem;">
+                        🔒 Status: Terenkripsi RSA (${rpt.cipherBlocks.length} Blok Ciphertext)
                     </span>
                     <span style="font-size:0.75rem; color:var(--text-dim);">Hanya Kunci Privat Auditor yang bisa membaca</span>
                 </div>
@@ -382,9 +456,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             </div>
 
-            <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
-                <button class="btn btn-primary btn-sm" onclick="decryptReportAction('${rpt.id}')">
-                    🔓 Dekripsi Laporan dengan Kunci Privat Auditor
+            <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap; margin-top:0.75rem;">
+                <button class="btn btn-emerald btn-sm" onclick="decryptReportAction('${rpt.id}')">
+                    🔓 Dekripsi RSA Kembali ke Plaintext
                 </button>
                 <div style="font-size:0.78rem; font-family:var(--font-mono); color:var(--text-muted);">
                     Digital Signature: ${rpt.signatureHex.slice(0, 16)}...
@@ -396,34 +470,34 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderDecryptedView(rpt, dec) {
         return `
             <div class="decrypted-box">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem; border-bottom:1px solid rgba(16,185,129,0.3); padding-bottom:0.5rem; flex-wrap:wrap; gap:0.5rem;">
-                    <div style="font-size:0.88rem; font-weight:700; color:#059669; display:flex; align-items:center; gap:0.4rem;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem; border-bottom:1px solid var(--border-highlight); padding-bottom:0.5rem; flex-wrap:wrap; gap:0.5rem;">
+                    <div style="font-size:0.9rem; font-weight:800; color:var(--primary-dark); display:flex; align-items:center; gap:0.4rem;">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                        Laporan Berhasil Didekripsi &amp; Tanda Tangan Terverifikasi Sah!
+                        Dekripsi RSA Berhasil &bull; Tanda Tangan Terverifikasi Sah!
                     </div>
-                    <span class="badge-tag tag-cyan" style="font-size:0.75rem;">RSA Decrypt: m = c^d mod n</span>
+                    <span class="badge-tag tag-emerald" style="font-size:0.75rem;">Formula Dekripsi: m = c^d mod n</span>
                 </div>
 
-                <div style="margin: 0.75rem 0 0.4rem 0; font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em;">
-                    📄 Hasil Plainteks Dokumen Asli (Setelah Didekripsi):
+                <div style="margin: 0.5rem 0 0.25rem 0; font-size: 0.8rem; font-weight: 700; color: var(--primary-dark); text-transform: uppercase; letter-spacing: 0.04em;">
+                    📄 Isi Plainteks Dokumen Asli (Setelah Didekripsi):
                 </div>
-                <div style="font-size: 1rem; line-height: 1.7; white-space: pre-wrap; color: #0f172a !important; background: #ffffff !important; border: 2px solid #10b981; border-radius: 8px; padding: 1.1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06); font-family: var(--font-ui); font-weight: 500;">
+                <div class="plaintext-result-card">
 ${escapeHtml(dec.plaintext)}
                 </div>
 
                 <!-- Bukti Matematis Verifikasi Tanda Tangan -->
-                <div style="background: rgba(15,23,42,0.92); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 0.9rem; margin-top: 1rem; font-family: var(--font-mono); font-size: 0.78rem; color: #f1f5f9;">
-                    <div style="color: #38bdf8; font-weight: 700; margin-bottom: 0.4rem;">
-                        Bukti Matematis Verifikasi Kriptografis RSA Digital Signature:
+                <div class="proof-card">
+                    <div style="color: var(--primary-dark); font-weight: 800; margin-bottom: 0.4rem; font-size: 0.84rem;">
+                        🛡️ Bukti Kriptografis RSA Digital Signature:
                     </div>
-                    <div>&bull; Hash Dokumen Asli H(M): <code style="color: #93c5fd; background: transparent;">${dec.currentHashHex.slice(0, 32)}...</code></div>
-                    <div>&bull; Nilai Dekripsi Signature V = (S^e mod n): <code style="color: #93c5fd; background: transparent;">${dec.verifiedV}</code></div>
-                    <div>&bull; Status Kecocokan V == H: <strong style="color: #34d399;">VALID (100% Cocok, Integritas Terjamin)</strong></div>
-                    <div>&bull; Keabsahan Pengirim: <strong style="color: #34d399;">Civitas Terdaftar pada Whitelist Resmi Organisasi</strong></div>
+                    <div>&bull; Hash Dokumen H(M): <code style="color: var(--primary-dark);">${dec.currentHashHex.slice(0, 32)}...</code></div>
+                    <div>&bull; Nilai Dekripsi Signature V = (S^e mod n): <code style="color: var(--primary-dark);">${dec.verifiedV}</code></div>
+                    <div>&bull; Status Keaslian V == H: <strong style="color: var(--primary); font-weight: 800;">VALID (100% Cocok, Integritas Terjamin)</strong></div>
+                    <div>&bull; Keabsahan Pengirim: <strong style="color: var(--primary); font-weight: 800;">Civitas Terdaftar pada Whitelist Resmi Kampus</strong></div>
                 </div>
 
                 ${rpt.auditorFeedback ? `
-                    <div style="margin-top: 1rem; padding: 0.85rem; background: rgba(99,102,241,0.08); border-left: 4px solid var(--primary); border-radius: 4px; font-size: 0.88rem; color: var(--text-main);">
+                    <div style="margin-top: 1rem; padding: 0.85rem; background: var(--primary-soft); border-left: 4px solid var(--primary); border-radius: 4px; font-size: 0.88rem; color: var(--text-main);">
                         <strong>Tanggapan Resmi Auditor:</strong> ${escapeHtml(rpt.auditorFeedback)}
                     </div>
                 ` : ''}
@@ -695,8 +769,8 @@ ${escapeHtml(dec.plaintext)}
     // RSA LABORATORY & MATH INSPECTOR
     // =========================================================================
     function initLabComponents() {
-        // 1. Miller-Rabin Primality Runner
         const btnRunPrime = document.getElementById('btnRunPrimeTest');
+        if (!btnRunPrime) return;
         btnRunPrime.addEventListener('click', () => {
             const bits = parseInt(document.getElementById('primeBitSelect').value, 10);
             const rounds = parseInt(document.getElementById('primeRoundsInput').value, 10);

@@ -52,15 +52,14 @@
             id: 'nav-tabs',
             tab: null,
             target: '.nav-tabs-wrapper',
-            title: '🧭 Navigasi Utama — 5 Tab Fitur',
+            title: '🧭 Navigasi Utama — 4 Tab Fitur',
             content: `
-                <p>Aplikasi memiliki <strong>5 tab utama</strong>:</p>
+                <p>Aplikasi memiliki <strong>4 tab utama</strong>:</p>
                 <ul>
                     <li>✍️ <strong>Kirim Laporan</strong> — Portal Whistleblower</li>
-                    <li>🔍 <strong>Panel Auditor</strong> — Dekripsi & investigasi laporan</li>
+                    <li>🔍 <strong>Panel Auditor</strong> — Dekripsi RSA ke Plaintext</li>
                     <li>👥 <strong>Direktori Civitas</strong> — Whitelist kunci publik RSA</li>
-                    <li>🔬 <strong>Lab Kripto</strong> — Inspeksi matematika RSA</li>
-                    <li>📖 <strong>Teori RSA</strong> — Dokumentasi & formula</li>
+                    <li>📖 <strong>Teori & Cara Kerja RSA</strong> — Penjelasan metode RSA</li>
                 </ul>`,
             position: 'bottom',
             spotlight: true,
@@ -239,100 +238,20 @@
             spotlight: true,
         },
 
-        // ── TAB 4: LAB ─────────────────────────────────────────────────────────
-        {
-            id: 'lab-intro',
-            tab: 'tab-lab',
-            target: '.math-subnav',
-            title: '🔬 Laboratorium Kriptografi RSA',
-            content: `
-                <p>Lab ini memiliki <strong>4 sub-modul</strong> untuk menginspeksi matematika RSA secara interaktif:</p>
-                <ul>
-                    <li>1️⃣ <strong>Miller-Rabin</strong> — Pembangkitan bilangan prima</li>
-                    <li>2️⃣ <strong>Keygen</strong> — Trace lengkap pembangkitan kunci</li>
-                    <li>3️⃣ <strong>Square-and-Multiply</strong> — Pemangkatan modular</li>
-                    <li>4️⃣ <strong>Anti-Tampering</strong> — Uji integritas tanda tangan</li>
-                </ul>`,
-            position: 'bottom',
-            spotlight: true,
-        },
-        {
-            id: 'lab-miller-rabin',
-            tab: 'tab-lab',
-            tabMath: 'math-primes',
-            target: '#math-primes .math-formula-callout',
-            title: '🧮 Miller-Rabin Primality Test',
-            content: `
-                <p>Algoritma pengujian bilangan prima probabilistik yang digunakan untuk membangkitkan <em>p</em> dan <em>q</em>:</p>
-                <div class="tut-formula">n &minus; 1 = 2<sup>s</sup> &middot; d</div>
-                <p style="margin-top:0.5rem;">Hitung x = a<sup>d</sup> mod n untuk beberapa saksi <em>a</em> secara acak. Semakin banyak putaran pengujian, semakin kecil kemungkinan bilangan komposit lolos uji.</p>`,
-            position: 'bottom',
-            spotlight: true,
-        },
-        {
-            id: 'lab-keygen',
-            tab: 'tab-lab',
-            tabMath: 'math-keygen',
-            target: '#math-keygen',
-            title: '🔑 Trace Pembangkitan Kunci RSA',
-            content: `
-                <p>Lihat seluruh langkah matematis pembangkitan kunci RSA:</p>
-                <ul>
-                    <li><strong>p, q</strong> — Dua bilangan prima acak</li>
-                    <li><strong>n = p &times; q</strong> — Modulus RSA</li>
-                    <li><strong>&phi;(n) = (p&minus;1)(q&minus;1)</strong> — Fungsi Euler Totient</li>
-                    <li><strong>e = 65537</strong> — Eksponen publik</li>
-                    <li><strong>d = e&#8315;&#185; mod &phi;(n)</strong> — Eksponen privat via Extended Euclidean</li>
-                </ul>`,
-            position: 'right',
-            spotlight: true,
-        },
-        {
-            id: 'lab-modpow',
-            tab: 'tab-lab',
-            tabMath: 'math-modpow',
-            target: '#math-modpow',
-            title: '⚡ Square-and-Multiply Visualizer',
-            content: `
-                <p>Visualisasi algoritma <strong>pemangkatan modular cepat</strong> yang digunakan di seluruh operasi RSA:</p>
-                <div class="tut-formula">base<sup>exp</sup> mod n</div>
-                <p style="margin-top:0.5rem;">Algoritma ini bekerja <strong>bit per bit</strong> dari eksponen, menghindari overflow pada bilangan BigInt yang sangat besar dengan kompleksitas <em>O(log exp)</em>.</p>`,
-            position: 'right',
-            spotlight: true,
-        },
-        {
-            id: 'lab-tampering',
-            tab: 'tab-lab',
-            tabMath: 'math-tampering',
-            target: '#math-tampering',
-            title: '🛡️ Uji Anti-Tampering Dokumen',
-            content: `
-                <p>Buktikan bahwa <strong>mengubah satu karakter saja</strong> akan langsung membatalkan tanda tangan digital!</p>
-                <ol>
-                    <li>Tandatangani dokumen asli &rarr; dapatkan nilai S</li>
-                    <li>Ubah satu huruf pada teks di kolom kanan</li>
-                    <li>Klik verifikasi &rarr; sistem akan mendeteksi pemalsuan</li>
-                </ol>
-                <p style="margin-top:0.5rem;">Ini adalah bukti nyata <strong>integritas kriptografis RSA</strong>!</p>`,
-            position: 'right',
-            spotlight: true,
-        },
-
-        // ── TAB 5: DOCS ────────────────────────────────────────────────────────
+        // ── TAB 4: TEORI & CARA KERJA RSA ──────────────────────────────────────
         {
             id: 'docs-overview',
             tab: 'tab-docs',
             target: '#tab-docs .glass-card',
-            title: '📖 Dokumentasi & Teori RSA',
+            title: '📖 Teori & Cara Kerja Metode RSA',
             content: `
-                <p>Tab ini berisi <strong>dokumentasi teknis lengkap</strong> implementasi:</p>
+                <p>Tab ini berisi <strong>penjelasan sederhana metode RSA</strong>:</p>
                 <ul>
-                    <li>📌 Masalah nyata yang diselesaikan</li>
-                    <li>🔢 Formula matematis RSA lengkap (dengan KaTeX rendering)</li>
-                    <li>💻 Bukti implementasi murni tanpa library</li>
-                </ul>
-                <p style="margin-top:0.5rem;">Semua formula matematika dirender menggunakan <strong>KaTeX</strong> untuk tampilan yang indah dan terbaca!</p>`,
-            position: 'right',
+                    <li>🔑 <strong>Konsep Kunci Asimetris</strong> — Kunci Publik & Kunci Privat</li>
+                    <li>⚙️ <strong>4 Langkah Metode RSA</strong> — Keygen, Enkripsi, Dekripsi, Signature</li>
+                    <li>🛡️ <strong>Jaminan Keamanan</strong> — Kerahasiaan, Anonimitas, Anti-Pemalsuan</li>
+                </ul>`,
+            position: 'top',
             spotlight: true,
         },
 
