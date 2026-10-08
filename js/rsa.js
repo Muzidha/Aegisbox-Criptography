@@ -1,21 +1,45 @@
 /**
- * Manual RSA Engine (Pure JavaScript & BigInt, No External Cryptography Libraries)
- * Dibuat secara mandiri untuk Tugas Besar Kriptografi.
+ * =========================================================================================
+ *                   AEGISBOX - MANUAL RSA CRYPTOGRAPHY ENGINE
+ *        Implementasi Algoritma Kriptografi Asimetris RSA Murni (Pure Native JavaScript)
+ *        Dibuat Secara Mandiri Tanpa Library Eksternal untuk Tugas Besar Kriptografi
+ * =========================================================================================
  * 
- * Modul ini mencakup:
- * 1. Pembangkitan Bilangan Prima Acak (Random Prime Generator)
- * 2. Pengujian Keprimaan Probabilistik Miller-Rabin (Miller-Rabin Primality Test)
- * 3. Algoritma Euclidean & Algoritma Euclidean Diperluas (Extended Euclidean Algorithm)
- * 4. Invers Modulo (Modular Multiplicative Inverse)
- * 5. Pembangkitan Pasangan Kunci RSA (Key Generation: p, q, n, phi, e, d)
- * 6. Pemangkatan Modular Cepat (Square-and-Multiply / Binary Modular Exponentiation)
- * 7. Chunking / Pembagian Blok Teks agar m < n
- * 8. Enkripsi & Dekripsi Blok Asimetris
- * 9. RSA Digital Signature (Pembuatan Tanda Tangan & Verifikasi Keaslian)
+ * PANDUAN CEPAT PRESENTASI / DEMO KE DOSEN:
+ * -----------------------------------------------------------------------------------------
+ * 1. Pembangkitan Kunci (Key Generation):
+ *    -> Buka fungsi: generateKeyPair(keyBits) di baris ~320
+ *    -> Rumus: p & q prima acak -> n = p * q -> phi = (p-1)*(q-1) -> e (koprima) -> d = e^(-1) mod phi
+ * 
+ * 2. Enkripsi Pesan (Encryption):
+ *    -> Buka fungsi: encryptText(plaintext, publicKey) di baris ~515
+ *    -> Rumus: c = (m^e) mod n  (dilakukan per blok agar syarat m < n terpenuhi)
+ * 
+ * 3. Dekripsi Pesan (Decryption):
+ *    -> Buka fungsi: decryptText(cipherPayload, privateKey) di baris ~575
+ *    -> Rumus: m = (c^d) mod n  (mengembalikan ciphertext ke plaintext asli)
+ * 
+ * 4. Pemangkatan Modular Cepat:
+ *    -> Buka fungsi: modPow(base, exp, mod) di baris ~115
+ *    -> Menggunakan metode Square-and-Multiply agar tidak terjadi integer overflow.
+ * 
+ * 5. Uji Keprimaan:
+ *    -> Buka fungsi: millerRabinTest(n, rounds) di baris ~245
+ *    -> Menguji keprimaan probabilistik 25 putaran tanpa pembagian lambat.
+ * 
+ * 6. Tanda Tangan Digital (Digital Signature):
+ *    -> Buka fungsi: signMessage() & verifySignature() di baris ~640
+ *    -> Rumus Sign: S = H(M)^d mod n | Rumus Verifikasi: V = S^e mod n == H(M)
+ * =========================================================================================
  */
 
 const ManualRSA = (function () {
-    // Daftar bilangan prima kecil untuk uji coba pembagian cepat (pre-filter)
+
+    // =====================================================================================
+    // 0. DAFTAR BILANGAN PRIMA KECIL (PRE-FILTERING)
+    // =====================================================================================
+    // Digunakan untuk menyaring kandidat bilangan prima dengan sangat cepat sebelum
+    // menjalankan uji Miller-Rabin yang lebih berat.
     const SMALL_PRIMES = [
         2n, 3n, 5n, 7n, 11n, 13n, 17n, 19n, 23n, 29n, 31n, 37n, 41n, 43n, 47n,
         53n, 59n, 61n, 67n, 71n, 73n, 79n, 83n, 89n, 97n, 101n, 103n, 107n, 109n,
@@ -23,11 +47,22 @@ const ManualRSA = (function () {
         181n, 191n, 193n, 197n, 199n, 211n, 223n, 227n, 229n, 233n, 239n, 241n, 251n
     ];
 
+    // =====================================================================================
+    // 1. ALGORITMA EUCLIDEAN STANDAR (PBB / GCD)
+    // =====================================================================================
     /**
-     * Hitung Pembagi Bersama Terbesar (GCD) menggunakan Algoritma Euclidean Standar
-     * @param {bigint} a
-     * @param {bigint} b
-     * @returns {bigint} gcd(a, b)
+     * Menghitung Pembagi Bersama Terbesar (PBB atau Greatest Common Divisor / GCD).
+     * 
+     * TUJUAN DI RSA:
+     * Digunakan untuk memastikan eksponen publik 'e' RELATIF PRIMA terhadap totient 'phi',
+     * yaitu syarat mutlak: gcd(e, phi) === 1.
+     * 
+     * CARA KERJA (Algoritma Euclidean):
+     * Selama sisa bagi (y) belum 0, geser nilai x menjadi y, dan y menjadi x mod y.
+     * 
+     * @param {bigint} a 
+     * @param {bigint} b 
+     * @returns {bigint} Nilai PBB/GCD dari a dan b
      */
     function gcd(a, b) {
         let x = a < 0n ? -a : a;
@@ -40,10 +75,21 @@ const ManualRSA = (function () {
         return x;
     }
 
+    // =====================================================================================
+    // 2. ALGORITMA EUCLIDEAN DIPERLUAS (EXTENDED EUCLIDEAN ALGORITHM)
+    // =====================================================================================
     /**
-     * Algoritma Euclidean Diperluas (Extended Euclidean Algorithm)
-     * Mencari x dan y sehingga a*x + b*y = gcd(a, b)
-     * Mengembalikan { gcd, x, y, steps }
+     * Algoritma Euclidean Diperluas.
+     * 
+     * TUJUAN DI RSA:
+     * Persamaan Bézout menyatakan: a*x + b*y = gcd(a, b).
+     * Jika gcd(e, phi) = 1, maka: e*x + phi*y = 1, yang berarti:
+     * e*x = 1 (mod phi) -> Nilai 'x' adalah invers perkalian modular dari 'e',
+     * yaitu KUNCI PRIVAT 'd'!
+     * 
+     * @param {bigint} a Nilai e
+     * @param {bigint} b Nilai phi(n)
+     * @returns {object} { gcd, x, y, steps }
      */
     function extendedEuclidean(a, b) {
         let old_r = a, r = b;
@@ -81,16 +127,29 @@ const ManualRSA = (function () {
         };
     }
 
+    // =====================================================================================
+    // 3. INVERS PERKALIAN MODULAR (MODULAR INVERSE)
+    // =====================================================================================
     /**
-     * Menghitung Invers Modular: d = e^(-1) mod phi
-     * sehingga (e * d) mod phi = 1
+     * Menghitung Invers Modular: d = e^(-1) mod phi(n)
+     * 
+     * RUMUS MATEMATIKA:
+     * (e * d) mod phi(n) = 1
+     * 
+     * TUJUAN DI RSA:
+     * Inilah rumus untuk membangkitkan KUNCI PRIVAT 'd'.
+     * Fungsi ini memanggil extendedEuclidean(), lalu memastikan hasil d bernilai positif.
+     * 
+     * @param {bigint} e Eksponen publik
+     * @param {bigint} phi Nilai Totient Euler (p-1)*(q-1)
+     * @returns {object} { d, steps }
      */
     function modInverse(e, phi) {
         const result = extendedEuclidean(e, phi);
         if (result.gcd !== 1n) {
             throw new Error(`Invers modulo tidak ada karena gcd(${e}, ${phi}) = ${result.gcd} !== 1`);
         }
-        // Pastikan d positif dalam modulo phi
+        // Pastikan nilai d selalu positif dalam rentang [1, phi - 1]
         let d = result.x % phi;
         if (d < 0n) {
             d += phi;
@@ -98,9 +157,32 @@ const ManualRSA = (function () {
         return { d, steps: result.steps };
     }
 
+    // =====================================================================================
+    // 4. PEMANGKATAN MODULAR CEPAT (SQUARE-AND-MULTIPLY / BINARY EXPONENTIATION)
+    // =====================================================================================
     /**
-     * Algoritma Pemangkatan Modular Cepat (Square-and-Multiply / Binary Exponentiation)
-     * Menghitung (base^exp) mod mod secara efisien tanpa overflow O(log exp)
+     * Menghitung (base^exp) mod mod secara efisien tanpa overflow.
+     * 
+     * KENAPA FUNGSI INI SANGAT KRUSIAL?
+     * Jika menghitung biasa: m^e atau c^d, angkanya bisa mencapai ribuan digit dan
+     * membuat komputer crash karena kehabisan memori (integer overflow).
+     * 
+     * CARA KERJA ALGORITMA SQUARE-AND-MULTIPLY:
+     * 1. Eksponen diubah ke representasi bit biner.
+     * 2. Setiap perulangan, nilai dikuadratkan: (b = b * b mod n) -> [SQUARE].
+     * 3. Jika bit saat ini bernilai 1, nilai dikalikan dengan basis: (result = result * b mod n) -> [MULTIPLY].
+     * 4. Kompleksitasnya sangat mangkus: O(log exp), bukan O(exp).
+     * 
+     * DIGUNAKAN UNTUK:
+     * - Enkripsi: c = modPow(m, e, n)
+     * - Dekripsi: m = modPow(c, d, n)
+     * - Tanda Tangan: S = modPow(h, d, n)
+     * - Verifikasi: V = modPow(S, e, n)
+     * 
+     * @param {bigint} base Bilangan basis (misal pesan m atau ciphertext c)
+     * @param {bigint} exp Eksponen (misal e atau d)
+     * @param {bigint} mod Modulus n
+     * @returns {bigint} Hasil (base^exp) mod mod
      */
     function modPow(base, exp, mod) {
         if (mod === 1n) return 0n;
@@ -109,18 +191,21 @@ const ManualRSA = (function () {
         let e = exp;
 
         while (e > 0n) {
+            // Jika bit paling belakang bernilai 1 (ganjil), lakukan Multiply
             if ((e & 1n) === 1n) {
                 result = (result * b) % mod;
             }
+            // Geser bit eksponen ke kanan 1 posisi (e = e / 2)
             e >>= 1n;
+            // Lakukan Square untuk putaran berikutnya
             b = (b * b) % mod;
         }
         return result;
     }
 
     /**
-     * Pemangkatan Modular dengan pencatatan jejak langkah (Trace Steps)
-     * Sangat berguna untuk visualisasi matematika bagi penguji / dosen.
+     * Pemangkatan Modular dengan Pencatatan Langkah Detail (Square-and-Multiply Trace).
+     * Berguna untuk menunjukkan visualisasi cara kerja algoritma bit-demi-bit kepada penguji.
      */
     function modPowWithTrace(base, exp, mod, maxRecordedSteps = 30) {
         if (mod === 1n) return { result: 0n, steps: [] };
@@ -136,18 +221,18 @@ const ManualRSA = (function () {
             const bit = binStr[i];
             const prevRes = result;
 
-            // Square
+            // Tahap Square
             if (i > 0) {
                 result = (result * result) % mod;
             }
 
-            let action = i === 0 ? "Initial" : `Square: (${prevRes}^2) mod n = ${result}`;
+            let action = i === 0 ? "Inisialisasi" : `Square: (${prevRes}^2) mod n = ${result}`;
 
-            // Multiply if bit == 1
+            // Tahap Multiply jika bit bernilai 1
             if (bit === '1') {
                 const beforeMul = result;
                 result = (result * b) % mod;
-                action += i === 0 ? `Set initial bit 1` : ` | Multiply: (${beforeMul} * ${b}) mod n = ${result}`;
+                action += i === 0 ? `Set bit awal 1` : ` | Multiply: (${beforeMul} * ${b}) mod n = ${result}`;
             }
 
             if (stepCount < maxRecordedSteps) {
@@ -164,8 +249,13 @@ const ManualRSA = (function () {
         return { result, steps, totalBits: binStr.length };
     }
 
+    // =====================================================================================
+    // 5. PEMBANGKIT BILANGAN ACAK BESAR (BIGINT RANDOM GENERATOR)
+    // =====================================================================================
     /**
-     * Menghasilkan BigInt acak dengan bit length tertentu
+     * Menghasilkan bilangan acak BigInt dengan panjang bit tertentu.
+     * Memastikan bit tertinggi bernilai 1 (agar panjang bit pas) dan
+     * bit terendah bernilai 1 (agar bilangan pasti ganjil, syarat awal calon prima).
      */
     function randomBigIntBits(bits) {
         if (bits < 2) bits = 2;
@@ -176,16 +266,15 @@ const ManualRSA = (function () {
             hex += byte.toString(16).padStart(2, '0');
         }
         let n = BigInt('0x' + hex);
-        // Pastikan bit tertinggi dan bit terendah (ganjil) aktif
         const mask = (1n << BigInt(bits)) - 1n;
         n = n & mask;
-        n |= (1n << BigInt(bits - 1)); // set bit tertinggi agar sesuai panjang bit
-        n |= 1n; // set bit terendah agar ganjil
+        n |= (1n << BigInt(bits - 1)); // Paksa bit tertinggi bernilai 1
+        n |= 1n;                      // Paksa bit terendah bernilai 1 (ganjil)
         return n;
     }
 
     /**
-     * Menghasilkan BigInt acak dalam rentang [0, maxLimit]
+     * Menghasilkan BigInt acak dalam batas [0, maxLimit]
      */
     function randomBigIntLimit(maxLimit) {
         if (maxLimit <= 0n) return 0n;
@@ -214,25 +303,44 @@ const ManualRSA = (function () {
         return min + randomBigIntLimit(range);
     }
 
+    // =====================================================================================
+    // 6. UJI KEPRIMAAN PROBABILISTIK MILLER-RABIN (MILLER-RABIN PRIMALITY TEST)
+    // =====================================================================================
     /**
-     * Uji Keprimaan Miller-Rabin (Probabilistic Primality Test)
-     * Menguji apakah n kemungkinan prima atau pasti komposit
+     * Uji Keprimaan Miller-Rabin.
+     * 
+     * TUJUAN DI RSA:
+     * RSA membutuhkan dua bilangan prima besar p dan q. Untuk mengecek apakah sebuah angka
+     * ratusan bit adalah bilangan prima, pengujian pembagian biasa (trial division) akan
+     * membutuhkan waktu miliaran tahun. Uji Miller-Rabin menyelesaikannya dalam milidetik!
+     * 
+     * TEOREMA & CARA KERJA:
+     * 1. Saring dulu dengan bilangan prima kecil (2, 3, 5, 7, ...).
+     * 2. Nyatakan (n - 1) sebagai: (2^s) * d, di mana d adalah bilangan ganjil.
+     * 3. Ambil basis acak 'a' dalam rentang [2, n - 2].
+     * 4. Hitung x = (a^d) mod n.
+     * 5. Jika x == 1 atau x == n - 1, maka n lolos pada putaran ini (kemungkinan prima).
+     * 6. Kuadratkan x sebanyak (s - 1) kali: x = (x^2) mod n.
+     *    Jika x mencapai n - 1, maka lolos.
+     * 7. Jika diuji sebanyak 25 putaran dan selalu lolos, probabilitas salahnya < 4^(-25)
+     *    (hampir 100% dipastikan prima).
+     * 
      * @param {bigint} n Bilangan ganjil yang akan diuji
-     * @param {number} rounds Jumlah putaran pengujian
-     * @returns {boolean} true jika kemungkinan besar prima, false jika komposit
+     * @param {number} rounds Jumlah putaran pengujian (default: 25)
+     * @returns {boolean} true jika kemungkinan besar prima, false jika komposit (bukan prima)
      */
     function millerRabinTest(n, rounds = 25) {
         if (n < 2n) return false;
         if (n === 2n || n === 3n) return true;
-        if ((n & 1n) === 0n) return false;
+        if ((n & 1n) === 0n) return false; // Bilangan genap selain 2 pasti bukan prima
 
-        // Cek pembagian dengan bilangan prima kecil (pre-filter cepat)
+        // Pre-filter cepat dengan prima kecil
         for (const sp of SMALL_PRIMES) {
             if (n === sp) return true;
             if (n % sp === 0n) return false;
         }
 
-        // Tulis n - 1 sebagai 2^s * d dengan d ganjil
+        // Tuliskan n - 1 = (2^s) * d
         let d = n - 1n;
         let s = 0n;
         while ((d & 1n) === 0n) {
@@ -240,9 +348,8 @@ const ManualRSA = (function () {
             s++;
         }
 
-        // Jalankan pengujian Miller-Rabin sebanyak k putaran
+        // Lakukan pengujian sebanyak 'rounds' putaran
         for (let i = 0; i < rounds; i++) {
-            // Pilih basis acak a dalam rentang [2, n - 2]
             const a = randomBigIntRange(2n, n - 2n);
             let x = modPow(a, d, n);
 
@@ -260,18 +367,16 @@ const ManualRSA = (function () {
             }
 
             if (composite) {
-                return false; // Pasti komposit
+                return false; // Pasti bukan bilangan prima
             }
         }
 
-        return true; // Kemungkinan besar prima
+        return true; // Kemungkinan besar bilangan prima murni
     }
 
     /**
-     * Pembangkitan Bilangan Prima Acak Mandiri
-     * @param {number} bits Panjang bit bilangan prima
-     * @param {number} rounds Jumlah putaran Miller-Rabin
-     * @returns {bigint}
+     * Membangkitkan bilangan prima acak dengan panjang bit tertentu.
+     * Berulang kali membuat angka acak ganjil sampai lolos uji Miller-Rabin.
      */
     function generatePrime(bits = 64, rounds = 25) {
         let candidate;
@@ -288,29 +393,48 @@ const ManualRSA = (function () {
         }
     }
 
+    // =====================================================================================
+    // 7. TAHAP 1 RSA: PEMBANGKITAN PASANGAN KUNCI (KEY GENERATION)
+    // =====================================================================================
     /**
-     * Pembangkitan Pasangan Kunci RSA (Key Generation)
-     * @param {number} keyBits Total bit modulus n (misal 128-bit, 256-bit, 512-bit)
+     * Pembangkitan Pasangan Kunci RSA (Kunci Publik & Kunci Privat).
+     * 
+     * ALUR 5 LANGKAH STANDAR MATEMATIKA RSA:
+     * -------------------------------------------------------------------------------------
+     * Langkah 1: Pilih dua bilangan prima acak besar yang berlainan: p dan q
+     * Langkah 2: Hitung Modulus n = p * q
+     *            (Nilai n ini dipublikasikan bersama kunci publik dan privat)
+     * Langkah 3: Hitung Fungsi Totient Euler phi(n) = (p - 1) * (q - 1)
+     *            (Nilai phi dirahasiakan, hanya digunakan untuk menghitung d)
+     * Langkah 4: Pilih eksponen publik 'e' sehingga 1 < e < phi dan gcd(e, phi) === 1
+     *            (Umumnya dipilih 65537 karena memiliki sifat matematis yang optimal)
+     * Langkah 5: Hitung eksponen privat 'd' menggunakan Algoritma Euclidean Diperluas
+     *            sehingga: (e * d) mod phi = 1  <=>  d = e^(-1) mod phi
+     * 
+     * HASIL AKHIR:
+     * - KUNCI PUBLIK : Pasangan (e, n) -> Boleh disebarkan ke semua orang
+     * - KUNCI PRIVAT : Pasangan (d, n) -> Harus dirahasiakan oleh pemilik kunci
+     * 
+     * @param {number} keyBits Total bit modulus n (misal 128-bit)
      * @returns {object} { publicKey, privateKey, mathDetails }
      */
     function generateKeyPair(keyBits = 128) {
         const primeBits = Math.floor(keyBits / 2);
 
-        // 1. Pembangkitan dua bilangan prima acak berlainan p dan q
+        // Langkah 1: Bangkitkan dua bilangan prima acak p dan q
         let p = generatePrime(primeBits);
         let q = generatePrime(primeBits);
         while (p === q) {
             q = generatePrime(primeBits);
         }
 
-        // 2. Hitung Modulus n = p * q
+        // Langkah 2: Hitung Modulus n = p * q
         const n = p * q;
 
-        // 3. Hitung Fungsi Totient Euler phi(n) = (p - 1) * (q - 1)
+        // Langkah 3: Hitung Euler Totient phi(n) = (p - 1) * (q - 1)
         const phi = (p - 1n) * (q - 1n);
 
-        // 4. Pilih eksponen publik e sehingga 1 < e < phi dan gcd(e, phi) = 1
-        // Gunakan calon standar e: 65537n, jika tidak relatif prima cari bilangan ganjil lain
+        // Langkah 4: Pilih eksponen publik e yang relatif prima terhadap phi
         const candidateE = [65537n, 17n, 257n, 65539n, 3n];
         let e = null;
         for (const cand of candidateE) {
@@ -321,7 +445,6 @@ const ManualRSA = (function () {
         }
 
         if (!e) {
-            // Pencarian acak jika calon umum tidak koprima
             let cand = 65537n;
             while (cand < phi) {
                 if (gcd(cand, phi) === 1n) {
@@ -332,7 +455,7 @@ const ManualRSA = (function () {
             }
         }
 
-        // 5. Hitung eksponen privat d = e^(-1) mod phi dengan Extended Euclidean
+        // Langkah 5: Hitung eksponen privat d via Extended Euclidean
         const { d, steps: euclideanSteps } = modInverse(e, phi);
 
         return {
@@ -360,8 +483,12 @@ const ManualRSA = (function () {
         };
     }
 
+    // =====================================================================================
+    // 8. KONVERSI TEKS KE DERETAN BYTE (MANUAL UTF-8 ENCODER / DECODER)
+    // =====================================================================================
     /**
-     * Konversi string UTF-8 ke Array of Bytes murni manual
+     * Konversi string teks UTF-8 ke deretan byte array secara manual murni tanpa library.
+     * Mendukung karakter standar ASCII hingga karakter multi-byte (huruf aksen & emoji).
      */
     function utf8ToBytes(str) {
         const bytes = [];
@@ -389,7 +516,7 @@ const ManualRSA = (function () {
     }
 
     /**
-     * Konversi Array of Bytes ke string UTF-8
+     * Konversi deretan byte array kembali menjadi string teks UTF-8 asli.
      */
     function bytesToUtf8(bytes) {
         let str = '';
@@ -418,7 +545,8 @@ const ManualRSA = (function () {
     }
 
     /**
-     * Konversi byte chunk menjadi BigInt bilangan murni
+     * Mengubah potongan byte menjadi bilangan integer BigInt murni (Big-Endian).
+     * Contoh byte [0x41, 0x42] ('AB') -> 0x4142n = 16706n.
      */
     function bytesToBigInt(bytes) {
         let val = 0n;
@@ -429,7 +557,7 @@ const ManualRSA = (function () {
     }
 
     /**
-     * Konversi BigInt kembali ke byte array
+     * Mengubah bilangan integer BigInt kembali menjadi array byte (Big-Endian).
      */
     function bigIntToBytes(val, expectedLength = null) {
         let bytes = [];
@@ -438,6 +566,7 @@ const ManualRSA = (function () {
             bytes.unshift(Number(temp & 0xffn));
             temp >>= 8n;
         }
+        // Tambahkan padding nol di depan jika panjang byte kurang dari panjang asli
         if (expectedLength !== null) {
             while (bytes.length < expectedLength) {
                 bytes.unshift(0);
@@ -446,20 +575,53 @@ const ManualRSA = (function () {
         return bytes;
     }
 
+    // =====================================================================================
+    // 9. PEMBAGIAN BLOK TEKS (CHUNKING SUPAYA SYARAT RSA m < n TERPENUHI)
+    // =====================================================================================
     /**
-     * Menghitung ukuran blok maksimum (dalam bytes) berdasarkan modulus n
-     * Syarat mutlak RSA: m < n.
+     * Menghitung ukuran blok maksimum (dalam satuan byte) berdasarkan Modulus n.
+     * 
+     * SYARAT MUTLAK MATEMATIKA RSA:
+     * Nilai numerik pesan 'm' HARUS LEBIH KECIL dari Modulus 'n' (0 <= m < n).
+     * Jika sebuah kalimat panjang langsung diubah menjadi angka m, nilainya pasti
+     * jauh melebihi n. Akibatnya pesan tidak akan bisa didekripsi!
+     * 
+     * SOLUSI:
+     * Pesan dipecah menjadi beberapa potongan blok (chunking) berukuran maksimal:
+     * blockSize = floor((bitLength(n) - 1) / 8).
+     * Untuk kunci 128-bit: (128 - 1) / 8 = 15 byte per blok.
+     * Dengan 15 byte, nilai m dipastikan selalu < n!
+     * 
+     * @param {bigint} nBigInt Modulus n
+     * @returns {number} Ukuran byte maksimum per blok
      */
     function getMaxBlockSize(nBigInt) {
         const bitLen = nBigInt.toString(2).length;
-        // Ambil (bitLen - 1) / 8 agar nilai blok m pasti lebih kecil dari n
         const blockSize = Math.floor((bitLen - 1) / 8);
         return blockSize < 1 ? 1 : blockSize;
     }
 
+    // =====================================================================================
+    // 10. TAHAP 2 RSA: ENKRIPSI PESAN (ENCRYPTION)
+    // =====================================================================================
     /**
-     * Enkripsi Pesan Teks menggunakan Kunci Publik RSA (e, n) dengan Pembagian Blok (Chunking)
-     * Formula enkripsi RSA: c = (m^e) mod n
+     * Enkripsi Pesan Teks menggunakan Kunci Publik RSA (e, n).
+     * 
+     * RUMUS MATEMATIKA:
+     * c = (m^e) mod n
+     * 
+     * LANGKAH-LANGKAH ENKRIPSI:
+     * -------------------------------------------------------------------------------------
+     * 1. Ambil eksponen publik 'e' dan modulus 'n' dari Kunci Publik penerima.
+     * 2. Ubah teks plainteks menjadi deretan byte UTF-8.
+     * 3. Bagi deretan byte menjadi beberapa blok (chunk) berukuran <= blockSize.
+     * 4. Ubah setiap blok byte menjadi bilangan bulat besar m_i (cek syarat m_i < n).
+     * 5. Hitung ciphertext per blok dengan rumus: c_i = (m_i^e) mod n via modPow().
+     * 6. Simpan nilai c_i dalam format Hexadesimal agar mudah dikirimkan melalui jaringan.
+     * 
+     * @param {string} plaintext Teks aduan rahasia
+     * @param {object} publicKey { e, n } Kunci publik Auditor
+     * @returns {object} { cipherBlocks, blockSize, mathTrace, totalBlocks, serialized }
      */
     function encryptText(plaintext, publicKey) {
         const e = BigInt(publicKey.e);
@@ -470,22 +632,24 @@ const ManualRSA = (function () {
         const cipherBlocks = [];
         const mathTrace = [];
 
-        // Bagi pesan menjadi potongan byte berukuran <= blockSize
+        // Bagi pesan menjadi potongan blok byte
         for (let i = 0; i < bytes.length; i += blockSize) {
             const chunk = bytes.slice(i, i + blockSize);
             const m = bytesToBigInt(chunk);
 
+            // Verifikasi syarat mutlak RSA
             if (m >= n) {
                 throw new Error(`Kondisi RSA dilanggar: Nilai blok pesan m (${m}) >= Modulus n (${n})`);
             }
 
-            // c = (m^e) mod n
+            // Rumus Enkripsi RSA: c = (m^e) mod n
             const c = modPow(m, e, n);
             cipherBlocks.push({
                 cHex: c.toString(16),
                 chunkLen: chunk.length
             });
 
+            // Rekam jejak langkah matematika untuk visualisasi demo
             if (mathTrace.length < 5) {
                 mathTrace.push({
                     chunkIndex: cipherBlocks.length,
@@ -503,14 +667,31 @@ const ManualRSA = (function () {
             blockSize,
             mathTrace,
             totalBlocks: cipherBlocks.length,
-            // Format serialisasi ciphertext siap kirim
             serialized: JSON.stringify(cipherBlocks)
         };
     }
 
+    // =====================================================================================
+    // 11. TAHAP 3 RSA: DEKRIPSI PESAN (DECRYPTION)
+    // =====================================================================================
     /**
-     * Dekripsi Pesan Ciphertext menggunakan Kunci Privat RSA (d, n)
-     * Formula dekripsi RSA: m = (c^d) mod n
+     * Dekripsi Pesan Ciphertext menggunakan Kunci Privat RSA (d, n).
+     * 
+     * RUMUS MATEMATIKA:
+     * m = (c^d) mod n
+     * 
+     * LANGKAH-LANGKAH DEKRIPSI:
+     * -------------------------------------------------------------------------------------
+     * 1. Ambil eksponen privat 'd' dan modulus 'n' dari Kunci Privat Auditor.
+     * 2. Ambil setiap blok ciphertext c_i (dalam format hex) dan ubah ke BigInt.
+     * 3. Hitung rumus dekripsi: m_i = (c_i^d) mod n via modPow().
+     *    Karena sifat matematika Euler: (m^e)^d mod n = m^(e*d) mod n = m!
+     * 4. Konversikan kembali bilangan m_i menjadi deretan byte aslinya.
+     * 5. Gabungkan semua byte dan terjemahkan kembali ke string teks Plaintext UTF-8 asli.
+     * 
+     * @param {string|Array} cipherPayload Blok ciphertext
+     * @param {object} privateKey { d, n } Kunci privat Auditor
+     * @returns {object} { plaintext, mathTrace, recoveredLength }
      */
     function decryptText(cipherPayload, privateKey) {
         const d = BigInt(privateKey.d);
@@ -532,13 +713,14 @@ const ManualRSA = (function () {
             const block = blocks[i];
             const c = BigInt('0x' + block.cHex);
 
-            // m = (c^d) mod n
+            // Rumus Dekripsi RSA: m = (c^d) mod n
             const m = modPow(c, d, n);
 
-            // Rekonstruksi byte sesuai panjang aslinya
+            // Rekonstruksi byte sesuai panjang asli blok
             const chunkBytes = bigIntToBytes(m, block.chunkLen);
             recoveredBytes.push(...chunkBytes);
 
+            // Rekam jejak langkah matematika untuk visualisasi demo
             if (mathTrace.length < 5) {
                 mathTrace.push({
                     chunkIndex: i + 1,
@@ -559,21 +741,37 @@ const ManualRSA = (function () {
         };
     }
 
+    // =====================================================================================
+    // 12. RSA DIGITAL SIGNATURE (PEMBUATAN TANDA TANGAN DIGITAL)
+    // =====================================================================================
     /**
-     * Pembentukan RSA Digital Signature (Tanda Tangan Digital)
-     * Formula: S = (H(M))^d mod n
-     * Di mana H(M) adalah hash SHA-256 yang dihitung secara manual tanpa library.
+     * Membentuk Tanda Tangan Digital RSA (Digital Signature).
+     * 
+     * TUJUAN:
+     * Membuktikan bahwa pengirim laporan adalah civitas berwenang tanpa membuka nama aslinya,
+     * serta menjamin isi laporan tidak pernah diubah oleh siapapun (Integritas Data).
+     * 
+     * RUMUS MATEMATIKA:
+     * S = (H(M))^d mod n
+     * 
+     * LANGKAH KERJA:
+     * 1. Hitung hash dari isi pesan M menggunakan SHA-256 manual -> H(M).
+     * 2. Sesuaikan ukuran hash ke dalam modulus pengirim: h = H(M) mod n.
+     * 3. Enkripsi hash tersebut menggunakan KUNCI PRIVAT PENGIRIM (d): S = (h^d) mod n.
+     * 
+     * @param {string} message Isi narasi laporan
+     * @param {object} privateKey Kunci privat pelapor
+     * @returns {object} { signatureHex, hashHex, hModN, signatureBigInt }
      */
     function signMessage(message, privateKey) {
         const d = BigInt(privateKey.d);
         const n = BigInt(privateKey.n);
 
-        // 1. Hash pesan menggunakan ManualSHA256
+        // 1. Hash pesan dengan SHA-256 manual
         const hashHex = ManualSHA256.hash(message);
         const fullHashBigInt = ManualSHA256.hexToBigInt(hashHex);
 
-        // 2. Karena hash SHA-256 berukuran 256-bit, sesuaikan dalam modulus n
-        // h = fullHashBigInt mod n
+        // 2. Sesuaikan ukuran hash agar h < n
         const h = fullHashBigInt % n;
 
         // 3. Tanda tangan digital: S = (h^d) mod n
@@ -587,10 +785,27 @@ const ManualRSA = (function () {
         };
     }
 
+    // =====================================================================================
+    // 13. RSA SIGNATURE VERIFICATION (VERIFIKASI KEASLIAN & INTEGRITAS PESAN)
+    // =====================================================================================
     /**
-     * Verifikasi RSA Digital Signature (Pengujian Keaslian Pengirim & Integritas Pesan)
-     * Formula: V = (S^e) mod n
-     * Verifikasi valid jika V == (H(M) mod n)
+     * Memverifikasi Tanda Tangan Digital RSA.
+     * 
+     * RUMUS MATEMATIKA:
+     * V = (S^e) mod n
+     * 
+     * PEMBUKTIAN KEABSAHAN:
+     * 1. Dekripsi tanda tangan S menggunakan KUNCI PUBLIK PENGIRIM (e): V = (S^e) mod n.
+     * 2. Hitung ulang hash pesan saat ini: expectedH = SHA-256(pesan_sekarang) mod n.
+     * 3. Jika V === expectedH:
+     *    -> TANDA TANGAN VALID!
+     *    -> Terbukti 100% dibuat oleh pemilik kunci privat pengirim yang sah.
+     *    -> Terbukti isi pesan 100% utuh dan tidak pernah diubah/dimanipulasi sedikitpun.
+     * 
+     * @param {string} message Teks laporan yang didekripsi
+     * @param {string} signatureHex Tanda tangan digital dalam hex
+     * @param {object} publicKey Kunci publik civitas pengirim dari daftar Whitelist
+     * @returns {object} { isValid, currentHashHex, expectedH, verifiedV, signatureHex }
      */
     function verifySignature(message, signatureHex, publicKey) {
         const e = BigInt(publicKey.e);
@@ -602,10 +817,10 @@ const ManualRSA = (function () {
         const fullHashBigInt = ManualSHA256.hexToBigInt(currentHashHex);
         const expectedH = fullHashBigInt % n;
 
-        // 2. Dekripsi tanda tangan dengan public key: V = (S^e) mod n
+        // 2. Dekripsi tanda tangan dengan kunci publik pengirim: V = (S^e) mod n
         const V = modPow(S, e, n);
 
-        // 3. Bandingkan hasil
+        // 3. Bandingkan hasil verifikasi dengan hash pesan
         const isValid = (V === expectedH);
 
         return {
@@ -617,6 +832,9 @@ const ManualRSA = (function () {
         };
     }
 
+    // =====================================================================================
+    // EKSPOR MODUL UNTUK PENGGUNAAN APLIKASI
+    // =====================================================================================
     return {
         gcd,
         extendedEuclidean,
@@ -633,3 +851,8 @@ const ManualRSA = (function () {
         getMaxBlockSize
     };
 })();
+
+// Ekspor ke window global untuk browser
+if (typeof window !== 'undefined') {
+    window.ManualRSA = ManualRSA;
+}
