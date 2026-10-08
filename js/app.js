@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Inisialisasi awal
     initTabs();
+    initAuth();
     initSenderDropdown();
     initLivePipeline();
     initQuickPresets();
@@ -77,6 +78,240 @@ document.addEventListener('DOMContentLoaded', () => {
     // =========================================================================
     // TAB NAVIGATION
     // =========================================================================
+    function activateTab(tabId) {
+        const tabButtons = document.querySelectorAll('.nav-tab-btn');
+        tabButtons.forEach(b => {
+            if (b.getAttribute('data-tab') === tabId) {
+                b.classList.add('active');
+            } else {
+                b.classList.remove('active');
+            }
+        });
+        document.querySelectorAll('.tab-pane').forEach(p => {
+            if (p.id === tabId) {
+                p.classList.add('active');
+            } else {
+                p.classList.remove('active');
+            }
+        });
+        if (tabId === 'tab-auditor') renderAuditorPanel();
+        if (tabId === 'tab-directory') renderDirectoryTable();
+    }
+
+
+    // =========================================================================
+    // AUTENTIKASI PENGGUNA & ROLE MANAGEMENT (LOGIN / REGISTER)
+    // =========================================================================
+    function applyUserSession() {
+        const currentUser = CivitasStore.getCurrentUser();
+        const authSection = document.getElementById('authSection');
+        const appSection = document.getElementById('authenticatedAppSection');
+        const userSessionPill = document.getElementById('userSessionPill');
+        const navTabAuditor = document.getElementById('navTabAuditor');
+        const navTabSubmit = document.getElementById('navTabSubmit');
+        const activeCivitasBanner = document.getElementById('activeCivitasInfoBanner');
+        const senderSelectGroup = document.getElementById('senderSelectGroup');
+
+        if (!currentUser) {
+            if (authSection) authSection.style.display = 'flex';
+            if (appSection) appSection.style.display = 'none';
+            if (userSessionPill) userSessionPill.style.display = 'none';
+
+            const userInp = document.getElementById('loginUsername');
+            const passInp = document.getElementById('loginPassword');
+            if (userInp) userInp.value = '';
+            if (passInp) passInp.value = '';
+            const authAlert = document.getElementById('authErrorAlert');
+            if (authAlert) authAlert.style.display = 'none';
+            return;
+        }
+
+        // Sudah Terotentikasi
+        if (authSection) authSection.style.display = 'none';
+        if (appSection) appSection.style.display = 'block';
+        if (userSessionPill) userSessionPill.style.display = 'flex';
+
+        const avatarEl = document.getElementById('userAvatar');
+        const nameEl = document.getElementById('userNameLabel');
+        const roleEl = document.getElementById('userRoleBadge');
+
+        currentMembers = CivitasStore.getMembers();
+        currentAuditor = CivitasStore.getAuditor();
+
+        if (currentUser.role === 'admin') {
+            // Pihak Berwenang / Auditor
+            if (avatarEl) avatarEl.textContent = '🛡️';
+            if (nameEl) nameEl.textContent = currentUser.name || currentUser.username;
+            if (roleEl) {
+                roleEl.textContent = 'Pihak Berwenang (Auditor)';
+                roleEl.style.color = '#059669';
+            }
+
+            // Auditor melihat Panel Auditor
+            if (navTabAuditor) navTabAuditor.style.display = 'inline-flex';
+            if (navTabSubmit) navTabSubmit.style.display = 'inline-flex';
+
+            if (activeCivitasBanner) activeCivitasBanner.style.display = 'none';
+            if (senderSelectGroup) senderSelectGroup.style.display = 'block';
+
+            initSenderDropdown();
+            activateTab('tab-auditor');
+        } else {
+            // Civitas Biasa (Pihak Pengirim)
+            let member = currentUser.member;
+            if (!member && currentUser.memberId) {
+                member = CivitasStore.findMemberById(currentUser.memberId);
+            }
+            if (!member) {
+                member = currentMembers[0];
+            }
+            selectedSender = member;
+
+            if (avatarEl) avatarEl.textContent = '👤';
+            if (nameEl) nameEl.textContent = currentUser.username;
+            if (roleEl) {
+                roleEl.textContent = `Civitas (${member ? member.pseudonymCode : 'Pengirim'})`;
+                roleEl.style.color = '#0d9488';
+            }
+
+            // Sembunyikan Panel Auditor dari Civitas Biasa!
+            if (navTabAuditor) navTabAuditor.style.display = 'none';
+            if (navTabSubmit) navTabSubmit.style.display = 'inline-flex';
+
+            // Tampilkan identitas pengirim aktif di formulir kirim laporan
+            if (activeCivitasBanner && member) {
+                activeCivitasBanner.style.display = 'flex';
+                activeCivitasBanner.innerHTML = `
+                    <div class="active-civitas-icon">🛡️</div>
+                    <div class="active-civitas-text">
+                        <strong>Identitas Pengirim Terotentikasi:</strong> ${escapeHtml(member.alias)} (${escapeHtml(member.role)} - ${escapeHtml(member.unit)})<br>
+                        <span>Nama asli Anda disamarkan. Pesan akan ditandatangani digital atas nama: <strong class="highlight-token" style="color:var(--primary); font-family:var(--font-mono);">${escapeHtml(member.pseudonymCode)}</strong></span>
+                    </div>
+                `;
+            }
+            if (senderSelectGroup) senderSelectGroup.style.display = 'none';
+
+            updateSenderKeyInput();
+            triggerLivePipelineUpdate();
+            activateTab('tab-submit');
+        }
+
+        updateHeaderBadges();
+    }
+
+    function initAuth() {
+        const tabLoginBtn = document.getElementById('authTabLoginBtn');
+        const tabRegBtn = document.getElementById('authTabRegisterBtn');
+        const formLogin = document.getElementById('formLogin');
+        const formRegister = document.getElementById('formRegister');
+        const authAlert = document.getElementById('authErrorAlert');
+        const btnLogout = document.getElementById('btnLogout');
+
+        function setAuthAlert(msg, type = 'error') {
+            if (!authAlert) return;
+            if (!msg) {
+                authAlert.style.display = 'none';
+                return;
+            }
+            authAlert.className = `auth-alert ${type}`;
+            authAlert.textContent = msg;
+            authAlert.style.display = 'block';
+        }
+
+        if (tabLoginBtn && tabRegBtn) {
+            tabLoginBtn.addEventListener('click', () => {
+                tabLoginBtn.classList.add('active');
+                tabRegBtn.classList.remove('active');
+                formLogin.style.display = 'block';
+                formRegister.style.display = 'none';
+                setAuthAlert('');
+            });
+
+            tabRegBtn.addEventListener('click', () => {
+                tabRegBtn.classList.add('active');
+                tabLoginBtn.classList.remove('active');
+                formLogin.style.display = 'none';
+                formRegister.style.display = 'block';
+                setAuthAlert('');
+            });
+        }
+
+        // Submit Login
+        if (formLogin) {
+            formLogin.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const u = document.getElementById('loginUsername').value.trim();
+                const p = document.getElementById('loginPassword').value.trim();
+
+                if (!u || !p) {
+                    setAuthAlert('Username dan password wajib diisi!');
+                    return;
+                }
+
+                try {
+                    const user = CivitasStore.login(u, p);
+                    setAuthAlert('');
+                    showToast(`Selamat datang, ${user.name || user.username}!`);
+                    applyUserSession();
+                } catch (err) {
+                    setAuthAlert(err.message || 'Login gagal.');
+                }
+            });
+        }
+
+        // Submit Register
+        if (formRegister) {
+            formRegister.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const u = document.getElementById('regUsername').value.trim();
+                const p = document.getElementById('regPassword').value.trim();
+                const keygenNotice = document.getElementById('regKeygenNotice');
+                const submitBtn = document.getElementById('btnSubmitRegister');
+
+                if (!u || !p) {
+                    setAuthAlert('Username dan password wajib diisi!');
+                    return;
+                }
+
+                if (u.length < 3) {
+                    setAuthAlert('Username minimal 3 karakter!');
+                    return;
+                }
+
+                if (keygenNotice) keygenNotice.style.display = 'block';
+                if (submitBtn) submitBtn.disabled = true;
+
+                setTimeout(() => {
+                    try {
+                        const user = CivitasStore.register(u, p);
+                        setAuthAlert('');
+                        showToast(`Registrasi berhasil! Akun dan Kunci RSA 128-bit dibuat untuk ${user.username}.`);
+                        applyUserSession();
+                        renderDirectoryTable();
+                    } catch (err) {
+                        setAuthAlert(err.message || 'Pendaftaran gagal.');
+                    } finally {
+                        if (keygenNotice) keygenNotice.style.display = 'none';
+                        if (submitBtn) submitBtn.disabled = false;
+                    }
+                }, 40);
+            });
+        }
+
+        // Logout
+        if (btnLogout) {
+            btnLogout.addEventListener('click', () => {
+                CivitasStore.logout();
+                showToast('Anda telah keluar dari akun.');
+                applyUserSession();
+            });
+        }
+
+        // Periksa sesi saat halaman dimuat
+        applyUserSession();
+    }
+
+
     function initTabs() {
         const tabButtons = document.querySelectorAll('.nav-tab-btn');
         tabButtons.forEach(btn => {
@@ -334,11 +569,14 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('reportContent').value = '';
             triggerLivePipelineUpdate();
 
-            // Pindah ke tab auditor untuk langsung melihat laporan masuk
-            setTimeout(() => {
-                const navAuditor = document.getElementById('navTabAuditor');
-                if (navAuditor) navAuditor.click();
-            }, 1000);
+            // Pindah ke tab auditor jika admin; jika civitas, tetap di form dengan konfirmasi
+            const curUser = CivitasStore.getCurrentUser();
+            if (curUser && curUser.role === 'admin') {
+                setTimeout(() => {
+                    const navAuditor = document.getElementById('navTabAuditor');
+                    if (navAuditor) navAuditor.click();
+                }, 1000);
+            }
 
         } catch (err) {
             console.error("Gagal mengirim laporan:", err);
