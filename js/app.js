@@ -636,16 +636,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div>
                         <div class="report-meta">
                             <span class="pseudonym-tag">👤 ${rpt.pseudonymCode}</span>
-                            ${isRegisteredCivitas ? `
-                                <span class="badge-verified">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                                    Civitas Sah Terdaftar (Whitelisted)
-                                </span>
-                            ` : `
-                                <span class="badge-tag" style="background:rgba(244,63,94,0.15); color:#f43f5e; border-color:rgba(244,63,94,0.3);">
-                                    ⚠️ Pengirim Luar / Kunci Tak Terdaftar
-                                </span>
-                            `}
+                            <span class="badge-tag ${isRegisteredCivitas ? 'tag-emerald' : 'tag-rose'}">${isRegisteredCivitas ? 'Whitelisted' : 'Kunci Tak Terdaftar'}</span>
                             <span style="font-size:0.78rem; color:var(--text-dim);">${new Date(rpt.submittedAt).toLocaleString('id-ID')}</span>
                         </div>
                         <h3 style="color:var(--text-main, #111827); font-size:1.15rem; margin-top:0.5rem; font-weight:700;">${escapeHtml(rpt.title)}</h3>
@@ -666,11 +657,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 <!-- Formulir Tindak Lanjut Auditor -->
                 <div style="margin-top:1.25rem; padding-top:1rem; border-top:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem;">
                     <div style="font-size:0.82rem; color:var(--text-muted);">
-                        Catatan Sistem: <em>${escapeHtml(rpt.statusNote || 'Tanda tangan kriptografis RSA melekat')}</em>
+                        Status: ${escapeHtml(rpt.statusNote || 'Laporan masuk')}
                     </div>
                     <div style="display:flex; gap:0.5rem;">
                         <button class="btn btn-secondary btn-sm" onclick="promptUpdateStatus('${rpt.id}')">
-                            📝 Ubah Status Investigasi
+                            Ubah Status
                         </button>
                     </div>
                 </div>
@@ -682,12 +673,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderEncryptedView(rpt, cipherPreviewStr) {
         return `
-            <div style="margin:1rem 0;">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
-                    <span style="font-size:0.8rem; text-transform:uppercase; font-weight:700; color:var(--accent-amber); display:flex; align-items:center; gap:0.4rem;">
-                        🔒 Status: Terenkripsi RSA (${rpt.cipherBlocks.length} Blok Ciphertext)
+            <div style="margin:0.85rem 0;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.35rem;">
+                    <span style="font-size:0.8rem; font-weight:700; color:var(--text-muted);">
+                        Ciphertext (${rpt.cipherBlocks.length} Blok RSA):
                     </span>
-                    <span style="font-size:0.75rem; color:var(--text-dim);">Hanya Kunci Privat Auditor yang bisa membaca</span>
                 </div>
                 <div class="cipher-preview-box">
                     ${cipherPreviewStr}
@@ -696,47 +686,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
             <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap; margin-top:0.75rem;">
                 <button class="btn btn-emerald btn-sm" onclick="decryptReportAction('${rpt.id}')">
-                    🔓 Dekripsi RSA Kembali ke Plaintext
+                    Buka &amp; Dekripsi Laporan
                 </button>
-                <div style="font-size:0.78rem; font-family:var(--font-mono); color:var(--text-muted);">
-                    Digital Signature: ${rpt.signatureHex.slice(0, 16)}...
+                <div style="font-size:0.78rem; font-family:var(--font-mono); color:var(--text-dim);">
+                    Signature: ${rpt.signatureHex.slice(0, 16)}...
                 </div>
             </div>
         `;
     }
 
     function renderDecryptedView(rpt, dec) {
+        const matchedMember = CivitasStore.findMemberByPublicKey(rpt.senderPublicKey);
         return `
             <div class="decrypted-box">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem; border-bottom:1px solid var(--border-highlight); padding-bottom:0.5rem; flex-wrap:wrap; gap:0.5rem;">
-                    <div style="font-size:0.9rem; font-weight:800; color:var(--primary-dark); display:flex; align-items:center; gap:0.4rem;">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                        Dekripsi RSA Berhasil &bull; Tanda Tangan Terverifikasi Sah!
-                    </div>
-                    <span class="badge-tag tag-emerald" style="font-size:0.75rem;">Formula Dekripsi: m = c^d mod n</span>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+                    <strong style="font-size:0.88rem; color:var(--primary-dark);">Isi Laporan (Plaintext):</strong>
+                    <span class="badge-tag tag-emerald" style="font-size:0.72rem;">Terdekripsi</span>
                 </div>
 
-                <div style="margin: 0.5rem 0 0.25rem 0; font-size: 0.8rem; font-weight: 700; color: var(--primary-dark); text-transform: uppercase; letter-spacing: 0.04em;">
-                    📄 Isi Plainteks Dokumen Asli (Setelah Didekripsi):
-                </div>
                 <div class="plaintext-result-card">
 ${escapeHtml(dec.plaintext)}
                 </div>
 
-                <!-- Bukti Matematis Verifikasi Tanda Tangan -->
-                <div class="proof-card">
-                    <div style="color: var(--primary-dark); font-weight: 800; margin-bottom: 0.4rem; font-size: 0.84rem;">
-                        🛡️ Bukti Kriptografis RSA Digital Signature:
-                    </div>
-                    <div>&bull; Hash Dokumen H(M): <code style="color: var(--primary-dark);">${dec.currentHashHex.slice(0, 32)}...</code></div>
-                    <div>&bull; Nilai Dekripsi Signature V = (S^e mod n): <code style="color: var(--primary-dark);">${dec.verifiedV}</code></div>
-                    <div>&bull; Status Keaslian V == H: <strong style="color: var(--primary); font-weight: 800;">VALID (100% Cocok, Integritas Terjamin)</strong></div>
-                    <div>&bull; Keabsahan Pengirim: <strong style="color: var(--primary); font-weight: 800;">Civitas Terdaftar pada Whitelist Resmi Kampus</strong></div>
+                <div style="margin-top:0.6rem; padding:0.5rem 0.75rem; background:var(--bg-surface); border:1px solid var(--border-color); border-radius:var(--radius-sm); font-size:0.8rem; color:var(--text-muted); display:flex; justify-content:space-between; flex-wrap:wrap; gap:0.5rem;">
+                    <span>Tanda Tangan Digital: <strong style="color:var(--primary);">${dec.isValid ? 'Valid (Hash Sesuai)' : 'Tidak Valid'}</strong></span>
+                    <span>Pengirim: <strong>${matchedMember ? 'Civitas Whitelist' : 'Pengirim Luar'}</strong> &bull; Pseudonim: <code>${escapeHtml(rpt.pseudonymCode)}</code></span>
                 </div>
 
                 ${rpt.auditorFeedback ? `
-                    <div style="margin-top: 1rem; padding: 0.85rem; background: var(--primary-soft); border-left: 4px solid var(--primary); border-radius: 4px; font-size: 0.88rem; color: var(--text-main);">
-                        <strong>Tanggapan Resmi Auditor:</strong> ${escapeHtml(rpt.auditorFeedback)}
+                    <div style="margin-top: 0.75rem; padding: 0.75rem; background: var(--primary-soft); border-left: 3px solid var(--primary); border-radius: 4px; font-size: 0.85rem; color: var(--text-main);">
+                        <strong>Tanggapan Auditor:</strong> ${escapeHtml(rpt.auditorFeedback)}
                     </div>
                 ` : ''}
             </div>

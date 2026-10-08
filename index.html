@@ -193,41 +193,6 @@
     </nav>
 
     <!-- ======================================================================
-         EXPLANATION HERO BANNER (3 LANGKAH MUDAH)
-         ====================================================================== -->
-    <div class="flow-banner-wrapper">
-        <div class="flow-banner">
-            <div class="flow-step-item">
-                <div class="flow-step-badge">1</div>
-                <div class="flow-step-content">
-                    <h4>Pelapor Anonim</h4>
-                    <p>Nama asli disamarkan. Dokumen ditandatangani digital dengan Kunci Privat civitas (\( S = H^d \bmod n \)).</p>
-                </div>
-            </div>
-            <div class="flow-divider">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-            </div>
-            <div class="flow-step-item">
-                <div class="flow-step-badge">2</div>
-                <div class="flow-step-content">
-                    <h4>Enkripsi End-to-End</h4>
-                    <p>Teks aduan dienkripsi dengan Kunci Publik Auditor (\( c = m^e \bmod n \)). Tidak bisa diintip siapapun.</p>
-                </div>
-            </div>
-            <div class="flow-divider">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-            </div>
-            <div class="flow-step-item">
-                <div class="flow-step-badge">3</div>
-                <div class="flow-step-content">
-                    <h4>Dekripsi &amp; Verifikasi</h4>
-                    <p>Auditor mendekripsi dokumen ke plaintext asli dan memvalidasi keabsahan pengirim terhadap Whitelist resmi.</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- ======================================================================
          MAIN CONTAINER
          ====================================================================== -->
     <main class="main-wrapper">
@@ -247,14 +212,14 @@
                             </svg>
                         </div>
                         <div>
-                            <h2 class="card-title">Formulir Aduan Anonim Terverifikasi</h2>
-                            <p class="card-subtitle">Laporan Anda diamankan dengan enkripsi ganda dan tanda tangan digital RSA.</p>
+                            <h2 class="card-title">Kirim Laporan Anonim</h2>
+                            <p class="card-subtitle">Sampaikan aduan atau aspirasi secara aman dan anonim.</p>
                         </div>
                     </div>
 
                     <!-- Preset Cepat (Quick Demo Presets) -->
                     <div class="quick-presets-box">
-                        <span class="preset-label">⚡ Coba Cepat (Isi Otomatis):</span>
+                        <span class="preset-label">⚡ Contoh Laporan:</span>
                         <div class="preset-buttons">
                             <button type="button" class="preset-btn" data-preset="lab">
                                 🏢 Pengadaan Lab
@@ -273,30 +238,24 @@
 
                     <!-- Pilihan Identitas Civitas (Saat Login sebagai Admin / Auditor Preview) -->
                     <div class="form-group" id="senderSelectGroup">
-                        <label class="form-label" for="senderSelect">
-                            Pilih Profil Civitas Pengirim
-                            <span class="label-tag">Terlindungi Whitelist</span>
-                        </label>
+                        <label class="form-label" for="senderSelect">Profil Civitas Pengirim</label>
                         <select id="senderSelect" class="form-select">
                             <!-- Diisi secara dinamis oleh JavaScript -->
                         </select>
-                        <div class="anonymity-card">
-                            <div class="anonymity-icon">🛡️</div>
-                            <div class="anonymity-text">
-                                <strong>Jaminan Perlindungan Identitas:</strong> Nama asli Anda <em>tidak dikirimkan</em> ke auditor. Auditor hanya menerima tanda tangan kriptografis dan Anda tampil sebagai pseudonim sah: <strong id="senderPseudonymHighlight" class="highlight-token">GHOST-CYBER-884</strong>.
-                            </div>
+                        <div style="font-size:0.82rem; color:var(--text-muted); margin-top:0.35rem;">
+                            Identitas disamarkan sebagai: <strong id="senderPseudonymHighlight" style="color:var(--primary); font-family:var(--font-mono);">GHOST-CYBER-884</strong>
                         </div>
                     </div>
 
                     <!-- Kunci Privat Pengirim (Dalam Toggle Bersih) -->
                     <details class="tech-collapse-box" id="privKeyCollapse">
                         <summary class="tech-collapse-summary">
-                            <span>🔑 Kunci Privat Pengirim Lokal (d) — Diperlukan untuk Tanda Tangan</span>
+                            <span>🔑 Kunci Privat Pengirim (d)</span>
                             <span class="toggle-link" id="btnToggleKeyVisibility">Tampilkan</span>
                         </summary>
                         <div class="tech-collapse-content">
                             <input type="password" id="senderPrivateKeyInput" class="form-input font-mono" readonly>
-                            <p class="form-hint">Disimpan aman di perangkat lokal untuk formula tanda tangan digital: \( S = H(M)^d \bmod n \)</p>
+                            <p class="form-hint">Digunakan secara lokal untuk membuat tanda tangan digital.</p>
                         </div>
                     </details>
 
@@ -320,7 +279,7 @@
 
                     <!-- Isi Laporan -->
                     <div class="form-group">
-                        <label class="form-label" for="reportContent">Isi Narasi Pengaduan &amp; Kronologi (Rahasia)</label>
+                        <label class="form-label" for="reportContent">Isi Narasi Pengaduan (Rahasia)</label>
                         <textarea id="reportContent" class="form-textarea" rows="5" placeholder="Tuliskan kronologi lengkap bukti yang Anda miliki...">Terdapat ketidaksesuaian spesifikasi komputer lab yang datang dibandingkan RAB pengadaan resmi fakultas. Pembayaran invoice tercatat untuk tipe Core i7, namun unit terpasang adalah Core i3 rekondisi tanpa segel resmi. Kami menyimpan salinan dokumen serah terima barang untuk audit forensik.</textarea>
                     </div>
 
@@ -329,7 +288,7 @@
                             <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
                             <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
                         </svg>
-                        <span>🔒 Enkripsi &amp; Kirim Laporan Terverifikasi (RSA)</span>
+                        <span>Kirim Laporan</span>
                     </button>
                 </div>
 
@@ -342,8 +301,8 @@
                             </svg>
                         </div>
                         <div>
-                            <h2 class="card-title">Live Cryptographic Pipeline</h2>
-                            <p class="card-subtitle">Pemrosesan keamanan RSA dan SHA-256 secara langsung (real-time).</p>
+                            <h2 class="card-title">Status Kriptografi</h2>
+                            <p class="card-subtitle">Pratinjau keamanan data saat laporan ditulis.</p>
                         </div>
                     </div>
 
@@ -353,12 +312,11 @@
                             <div class="step-num">1</div>
                             <div class="step-body">
                                 <div class="step-header-row">
-                                    <div class="step-title">Hashing Pesan (Manual SHA-256)</div>
+                                    <div class="step-title">Hash Pesan (SHA-256)</div>
                                     <span class="step-status-badge badge-green">Aktif</span>
                                 </div>
-                                <div class="step-desc">Menghasilkan intisari unik dokumen (256-bit) untuk menjamin integritas anti-pemalsuan.</div>
-                                <div class="code-box live-preview-box" id="liveHashPreview">
-                                    Menghitung hash SHA-256...
+                                <div class="code-box live-preview-box" id="liveHashPreview" style="margin-top:0.35rem;">
+                                    Menunggu isi laporan...
                                 </div>
                             </div>
                         </div>
@@ -368,12 +326,11 @@
                             <div class="step-num">2</div>
                             <div class="step-body">
                                 <div class="step-header-row">
-                                    <div class="step-title">RSA Digital Signature Pelapor</div>
+                                    <div class="step-title">Digital Signature (RSA)</div>
                                     <span class="step-status-badge badge-green">Siap</span>
                                 </div>
-                                <div class="step-desc">Formula: \( S = (H \bmod n_{\text{user}})^{d_{\text{user}}} \bmod n_{\text{user}} \)</div>
-                                <div class="step-math live-preview-box" id="liveSigPreview">
-                                    S (Hex): siap dibangkitkan
+                                <div class="step-math live-preview-box" id="liveSigPreview" style="margin-top:0.35rem;">
+                                    -
                                 </div>
                             </div>
                         </div>
@@ -383,12 +340,11 @@
                             <div class="step-num">3</div>
                             <div class="step-body">
                                 <div class="step-header-row">
-                                    <div class="step-title">Enkripsi Asimetris RSA (Kunci Auditor)</div>
-                                    <span class="step-status-badge badge-green">End-to-End</span>
+                                    <div class="step-title">Ciphertext (RSA 128-bit)</div>
+                                    <span class="step-status-badge badge-green">Enkripsi</span>
                                 </div>
-                                <div class="step-desc">Teks dipecah ke blok byte \( m &lt; n \). Formula: \( c_i = (m_i^e) \bmod n_{\text{auditor}} \)</div>
-                                <div class="step-math live-preview-box" id="liveCipherPreview">
-                                    Menunggu proses enkripsi blok...
+                                <div class="step-math live-preview-box" id="liveCipherPreview" style="margin-top:0.35rem;">
+                                    -
                                 </div>
                             </div>
                         </div>
@@ -398,22 +354,20 @@
                             <div class="step-num">4</div>
                             <div class="step-body">
                                 <div class="step-header-row">
-                                    <div class="step-title">Pengaburan Identitas (Pseudonim Sah)</div>
+                                    <div class="step-title">Pseudonim Pengirim</div>
                                     <span class="step-status-badge badge-green">Anonim</span>
                                 </div>
-                                <div class="step-desc">Auditor hanya memvalidasi keabsahan kunci publik tanpa melihat identitas asli Anda.</div>
-                                <div style="margin-top:0.4rem;">
+                                <div style="margin-top:0.35rem;">
                                     <span class="pseudonym-tag" id="livePseudonymPreview">GHOST-CYBER-884</span>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Ringkasan Kunci Publik Auditor (Tujuan Pengiriman) -->
+                    <!-- Ringkasan Kunci Publik Auditor -->
                     <div class="key-summary-box">
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
-                            <span style="font-size:0.75rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em;">Kunci Publik Auditor Penerima (e, n)</span>
-                            <span class="badge-tag tag-emerald" style="padding:0.12rem 0.5rem; font-size:0.68rem;">Verified Auditor Key</span>
+                        <div style="font-size:0.75rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:0.35rem;">
+                            Kunci Publik Auditor Penerima
                         </div>
                         <div class="font-mono text-code" id="submitAuditorKeySummary" style="font-size:0.75rem; word-break:break-all;">
                             e: 65537<br>
@@ -436,13 +390,13 @@
                     </svg>
                 </div>
                 <div>
-                    <h2 class="card-title">Kotak Masuk Tim Auditor &amp; Komite Etik</h2>
-                    <p class="card-subtitle">Semua aduan masuk dalam keadaan terenkripsi (Ciphertext). Klik tombol dekripsi untuk membuka kembali ke Plaintext asli.</p>
+                    <h2 class="card-title">Panel Auditor</h2>
+                    <p class="card-subtitle">Daftar laporan pengaduan masuk terenkripsi.</p>
                 </div>
                 <div style="margin-left:auto; display:flex; gap:0.6rem; flex-wrap:wrap;">
                     <button class="btn btn-secondary btn-sm" id="btnShowAuditorKeyModal">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                        <span>Kelola Kunci Auditor</span>
+                        <span>Kelola Kunci</span>
                     </button>
                     <button class="btn btn-secondary btn-sm" id="btnRefreshReports">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.54-3.13"/></svg>
@@ -454,17 +408,14 @@
             <!-- Auditor Status Box -->
             <div class="auditor-status-card">
                 <div>
-                    <div style="font-size:0.75rem; text-transform:uppercase; font-weight:700; color:var(--primary); letter-spacing:0.05em; margin-bottom:0.25rem;">Penerima Resmi Laporan</div>
-                    <div style="font-size:1.05rem; font-weight:800; color:var(--text-main);" id="auditorPanelName">Komite Etik &amp; Satgas Investigasi Independen</div>
-                    <div style="font-size:0.8rem; color:var(--text-muted); font-family:var(--font-mono); margin-top:0.2rem;" id="auditorPanelKeyInfo">
-                        Modulus n: 128-bit &bull; Eksponen Publik e: 65537
+                    <div style="font-size:0.75rem; text-transform:uppercase; font-weight:700; color:var(--text-dim); letter-spacing:0.04em;">Penerima Laporan (Auditor)</div>
+                    <div style="font-size:0.95rem; font-weight:700; color:var(--text-main); margin-top:0.15rem;" id="auditorPanelName">Komite Etik &amp; Satgas Investigasi Independen</div>
+                    <div style="font-size:0.8rem; color:var(--text-muted); font-family:var(--font-mono); margin-top:0.15rem;" id="auditorPanelKeyInfo">
+                        Modulus: 128-bit &bull; e: 65537
                     </div>
                 </div>
                 <div>
-                    <span class="badge-tag tag-emerald">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                        Kunci Privat Auditor Siap Digunakan
-                    </span>
+                    <span class="badge-tag tag-emerald">Kunci Privat Aktif</span>
                 </div>
             </div>
 
@@ -490,7 +441,7 @@
                     </div>
                     <div>
                         <h2 class="card-title">Direktori Civitas Terdaftar (Whitelist Kunci Publik)</h2>
-                        <p class="card-subtitle">Daftar anggota resmi organisasi yang memiliki wewenang untuk mengirimkan aduan terverifikasi.</p>
+                        <p class="card-subtitle">Daftar kunci publik civitas untuk verifikasi pengirim anonim.</p>
                     </div>
                     <div style="margin-left:auto;">
                         <button class="btn btn-primary btn-sm" id="btnOpenNewMemberModal">
@@ -501,12 +452,6 @@
                             <span>Daftarkan Civitas Baru</span>
                         </button>
                     </div>
-                </div>
-
-                <!-- Penjelasan Konsep Whitelist yang Mudah Dipahami -->
-                <div class="math-formula-callout" style="margin-top:0.75rem; margin-bottom:1.5rem;">
-                    <strong>💡 Mengapa Auditor Tahu Pelapor Warga Resmi Tanpa Tahu Namanya?</strong><br>
-                    Organisasi hanya menyimpan <em>Kunci Publik RSA</em> civitas dalam tabel whitelist ini. Saat laporan masuk, auditor cukup memverifikasi apakah Digital Signature dapat didekripsi dengan salah satu Kunci Publik yang ada di tabel ini (\( V \equiv S^e \pmod n \)). Jika cocok, sistem menjamin 100% pengirim adalah civitas resmi, tanpa auditor mengetahui nama asli pengadu.
                 </div>
 
                 <div class="table-responsive">
@@ -525,6 +470,11 @@
                             <!-- Diisi oleh JavaScript -->
                         </tbody>
                     </table>
+                </div>
+
+                <div style="margin-top: 1rem; font-size: 0.82rem; color: var(--text-dim); display: flex; align-items: center; gap: 0.4rem;">
+                    <span>🛡️</span>
+                    <span>Tabel ini hanya memuat <strong>Kunci Publik</strong> civitas. Auditor memverifikasi keabsahan laporan melalui tanda tangan digital tanpa mengetahui identitas asli pengirim.</span>
                 </div>
             </div>
         </section>
