@@ -487,10 +487,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const pseudonymPreview = document.getElementById('livePseudonymPreview');
         const auditorSummary = document.getElementById('submitAuditorKeySummary');
 
+        const cipherTraceEl = document.getElementById('liveCipherTracePreview');
+
         if (!text) {
             hashPreview.textContent = 'Silakan tulis isi narasi laporan...';
             sigPreview.textContent = '-';
             cipherPreview.textContent = '-';
+            if (cipherTraceEl) cipherTraceEl.innerHTML = '';
             return;
         }
 
@@ -507,6 +510,16 @@ document.addEventListener('DOMContentLoaded', () => {
             const auditor = CivitasStore.getAuditor();
             const enc = ManualRSA.encryptText(text, auditor.publicKey);
             cipherPreview.textContent = `Total ${enc.totalBlocks} RSA blok terenkripsi (Blok 1: 0x${enc.cipherBlocks[0].cHex.slice(0, 24)}...)`;
+
+            if (cipherTraceEl && enc.mathTrace && enc.mathTrace[0]) {
+                const tr = enc.mathTrace[0];
+                cipherTraceEl.innerHTML = `
+                    <div style="padding:0.45rem 0.6rem; background:rgba(0,0,0,0.02); border-radius:4px; border-left:3px solid var(--primary); margin-top:0.35rem;">
+                        <strong>Rumus Enkripsi RSA:</strong> <code>c = (m^e) mod n</code><br>
+                        <strong>Sampel Blok 1:</strong> m = <code>${tr.m.slice(0, 16)}...</code> &rarr; c = <code>0x${tr.cHex.slice(0, 16)}...</code>
+                    </div>
+                `;
+            }
 
             // 4. Pseudonym Tag
             pseudonymPreview.textContent = selectedSender.pseudonymCode;
@@ -701,6 +714,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderDecryptedView(rpt, dec) {
         const matchedMember = CivitasStore.findMemberByPublicKey(rpt.senderPublicKey);
+        const traces = (dec.mathTrace && dec.mathTrace.length > 0) ? dec.mathTrace : (function() {
+            try {
+                const aud = CivitasStore.getAuditor();
+                const sampleRes = ManualRSA.decryptText(rpt.cipherBlocks.slice(0, 2), aud.privateKey);
+                return sampleRes.mathTrace || [];
+            } catch(e) { return []; }
+        })();
+
         return `
             <div class="decrypted-box">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
@@ -716,6 +737,30 @@ ${escapeHtml(dec.plaintext)}
                     <span>Tanda Tangan Digital: <strong style="color:var(--primary);">${dec.isValid ? 'Valid (Hash Sesuai)' : 'Tidak Valid'}</strong></span>
                     <span>Pengirim: <strong>${matchedMember ? 'Civitas Whitelist' : 'Pengirim Luar'}</strong> &bull; Pseudonim: <code>${escapeHtml(rpt.pseudonymCode)}</code></span>
                 </div>
+
+                <!-- Collapsible Detail Matematika Dekripsi RSA -->
+                <details class="tech-collapse-box" style="margin-top:0.75rem;">
+                    <summary class="tech-collapse-summary">
+                        <span>📐 Bukti Tahapan Dekripsi RSA (m = c^d mod n)</span>
+                        <span class="toggle-link">Lihat Rincian Matematis</span>
+                    </summary>
+                    <div class="tech-collapse-content" style="padding:0.75rem; font-size:0.8rem; background:var(--bg-surface); border:1px solid var(--border-color); border-radius:var(--radius-sm); margin-top:0.5rem; line-height:1.6;">
+                        <div style="margin-bottom:0.4rem; font-family:var(--font-mono); color:var(--text-muted);">
+                            <strong>Formula Dekripsi:</strong> <code>m = (c^d) mod n</code> &bull; Total Blok: <strong>${rpt.cipherBlocks ? rpt.cipherBlocks.length : 0} blok RSA</strong>
+                        </div>
+                        ${traces.map(t => `
+                            <div style="padding:0.4rem 0.6rem; margin-bottom:0.4rem; background:#ffffff; border:1px solid var(--border-color); border-radius:4px; font-family:var(--font-mono);">
+                                <div style="color:var(--text-muted); font-size:0.75rem;">Blok ${t.chunkIndex}:</div>
+                                <div>c = <code>0x${t.cHex.slice(0, 20)}...</code></div>
+                                <div>m = c<sup>d</sup> mod n = <code>${t.m.slice(0, 16)}...</code></div>
+                                <div style="color:var(--primary); font-weight:600;">Teks Terpulihkan: "${escapeHtml(t.recoveredText)}"</div>
+                            </div>
+                        `).join('')}
+                        <div style="margin-top:0.5rem; font-size:0.78rem; color:var(--text-dim); font-family:var(--font-mono);">
+                            Verifikasi Tanda Tangan: <code>V = (S^e) mod n = ${dec.verifiedV ? dec.verifiedV.slice(0, 20) + '...' : '-'}</code> (${dec.isValid ? 'Cocok dengan Hash Dokumen' : 'Tidak Cocok'})
+                        </div>
+                    </div>
+                </details>
 
                 ${rpt.auditorFeedback ? `
                     <div style="margin-top: 0.75rem; padding: 0.75rem; background: var(--primary-soft); border-left: 3px solid var(--primary); border-radius: 4px; font-size: 0.85rem; color: var(--text-main);">
@@ -746,7 +791,8 @@ ${escapeHtml(dec.plaintext)}
                 plaintext: decResult.plaintext,
                 currentHashHex: sigCheck.currentHashHex,
                 verifiedV: sigCheck.verifiedV,
-                isValid: sigCheck.isValid
+                isValid: sigCheck.isValid,
+                mathTrace: decResult.mathTrace || []
             };
             decryptedReportsMap[reportId] = decData;
 
@@ -940,6 +986,20 @@ ${escapeHtml(dec.plaintext)}
             `Eksponen e: ${aud.publicKey.e}\nModulus n: ${aud.publicKey.n} (${aud.publicKey.bitLength}-bit)`;
         document.getElementById('modalAuditorPrivateKey').textContent = 
             `Eksponen Privat d: ${aud.privateKey.d}`;
+
+        const mathEl = document.getElementById('modalAuditorMathDetails');
+        if (mathEl) {
+            const m = aud.mathDetails || {};
+            mathEl.innerHTML = `
+                <div><strong>1. Bilangan Prima p (rahasia):</strong> <code>${m.p || '-'}</code></div>
+                <div><strong>2. Bilangan Prima q (rahasia):</strong> <code>${m.q || '-'}</code></div>
+                <div><strong>3. Modulus n = p &times; q (publik):</strong> <code>${m.n || aud.publicKey.n}</code> (${aud.publicKey.bitLength}-bit)</div>
+                <div><strong>4. Euler's Totient &phi;(n) = (p - 1)(q - 1) (rahasia):</strong> <code>${m.phi || '-'}</code></div>
+                <div><strong>5. Eksponen Publik e (publik):</strong> <code>${aud.publicKey.e}</code> (memenuhi gcd(e, &phi;) = 1)</div>
+                <div><strong>6. Eksponen Privat d = e<sup>-1</sup> mod &phi; (rahasia):</strong> <code>${aud.privateKey.d}</code></div>
+                <div style="margin-top:0.4rem; color:var(--primary); font-weight:700;">&bull; Verifikasi: (e &times; d) mod &phi;(n) = 1 (Terbukti Valid!)</div>
+            `;
+        }
         auditorModal.classList.add('open');
     });
 

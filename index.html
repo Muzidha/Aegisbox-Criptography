@@ -340,6 +340,7 @@
                                 <div class="step-math live-preview-box" id="liveCipherPreview" style="margin-top:0.35rem;">
                                     -
                                 </div>
+                                <div id="liveCipherTracePreview" style="margin-top:0.4rem; font-size:0.75rem; font-family:var(--font-mono); color:var(--text-muted);"></div>
                             </div>
                         </div>
 
@@ -730,6 +731,16 @@
                 <label class="form-label">Kunci Privat Auditor (d):</label>
                 <div class="code-box" id="modalAuditorPrivateKey" style="color:var(--accent-amber);">-</div>
             </div>
+
+            <details class="tech-collapse-box" style="margin-top:1rem;">
+                <summary class="tech-collapse-summary">
+                    <span>📐 Parameter Lengkap Pembangkitan Kunci RSA (p, q, &phi;(n), e, d)</span>
+                    <span class="toggle-link">Lihat Nilai</span>
+                </summary>
+                <div class="tech-collapse-content" id="modalAuditorMathDetails" style="padding:0.75rem; font-size:0.78rem; font-family:var(--font-mono); line-height:1.6; background:var(--bg-surface); border:1px solid var(--border-color); border-radius:var(--radius-sm); margin-top:0.5rem;">
+                    -
+                </div>
+            </details>
 
             <div style="margin-top:1.5rem; display:flex; gap:0.6rem; flex-wrap:wrap;">
                 <button type="button" class="btn btn-primary" id="btnRegenerateAuditorKeys">
