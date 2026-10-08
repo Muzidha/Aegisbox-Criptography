@@ -251,14 +251,15 @@ const CivitasStore = (function () {
         const cleanUser = String(username || '').trim().toLowerCase();
         const cleanPass = String(password || '').trim();
 
-        if (!cleanUser || !cleanPass) {
-            throw new Error("Username dan kata sandi wajib diisi!");
+        if (!cleanUser) {
+            throw new Error("Username wajib diisi!");
         }
 
         // Jalur login fleksibel untuk Pihak Berwenang (Admin / Auditor)
-        if (cleanUser === 'admin' && (cleanPass === 'admin' || cleanPass === 'admin123')) {
+        // Menerima username admin atau auditor secara case-insensitive dengan kata sandi apapun
+        if (cleanUser === 'admin' || cleanUser === 'auditor') {
             const sessionUser = {
-                username: 'admin',
+                username: cleanUser,
                 role: 'admin',
                 name: 'Pihak Berwenang',
                 memberId: null,
@@ -268,19 +269,12 @@ const CivitasStore = (function () {
             return sessionUser;
         }
 
-        if (cleanUser === 'auditor' && (cleanPass === 'auditor' || cleanPass === 'auditor123')) {
-            const sessionUser = {
-                username: 'auditor',
-                role: 'admin',
-                name: 'Pihak Berwenang',
-                memberId: null,
-                member: null
-            };
-            setCurrentUser(sessionUser);
-            return sessionUser;
-        }
+        const found = (data.users || []).find(u => {
+            const matchUser = u.username.toLowerCase() === cleanUser;
+            const matchPass = u.password === cleanPass || u.password.toLowerCase() === cleanPass.toLowerCase();
+            return matchUser && matchPass;
+        });
 
-        const found = (data.users || []).find(u => u.username.toLowerCase() === cleanUser && u.password === cleanPass);
         if (!found) {
             throw new Error("Username atau kata sandi tidak cocok. Silakan coba lagi.");
         }
@@ -309,8 +303,21 @@ const CivitasStore = (function () {
         const cleanPass = String(password || '').trim();
         const cleanAlias = String(alias || ('Civitas @' + cleanUser)).trim();
 
-        if (!cleanUser || !cleanPass) {
-            throw new Error("Username dan password wajib diisi!");
+        if (!cleanUser) {
+            throw new Error("Username wajib diisi!");
+        }
+
+        // Jika pengguna mendaftar sebagai admin atau auditor, otomatis berikan sesi admin langsung
+        if (cleanUser === 'admin' || cleanUser === 'auditor') {
+            const sessionUser = {
+                username: cleanUser,
+                role: 'admin',
+                name: 'Pihak Berwenang',
+                memberId: null,
+                member: null
+            };
+            setCurrentUser(sessionUser);
+            return sessionUser;
         }
 
         if (cleanUser.length < 3) {
