@@ -1640,38 +1640,43 @@ body {
 .user-session-pill {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    background: var(--primary-soft);
+    gap: 0.65rem;
+    background: #ffffff;
     border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
-    padding: 0.35rem 0.85rem;
+    padding: 0.35rem 0.75rem;
+    box-shadow: 0 1px 2px rgba(5, 150, 105, 0.05);
 }
 
 .user-role-avatar {
-    font-size: 1.25rem;
+    width: 28px;
+    height: 28px;
+    background: var(--primary-soft);
+    border-radius: 50%;
+    color: var(--primary);
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
 }
 
 .user-meta {
     display: flex;
     flex-direction: column;
-}
-
-.user-name-label {
-    font-size: 0.875rem;
-    font-weight: 700;
-    color: var(--primary-dark);
     line-height: 1.2;
 }
 
+.user-name-label {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
 .user-role-badge {
-    font-size: 0.72rem;
+    font-size: 0.7rem;
     font-weight: 600;
     color: var(--primary);
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
+    letter-spacing: 0.02em;
 }
 
 .btn-logout {

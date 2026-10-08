@@ -186,6 +186,18 @@ const CivitasStore = (function () {
                 saveData(DEFAULT_DATA);
                 return DEFAULT_DATA;
             }
+
+            if (!Array.isArray(parsed.users)) {
+                parsed.users = [...DEFAULT_DATA.users];
+                saveData(parsed);
+            } else {
+                DEFAULT_DATA.users.forEach(defU => {
+                    if (!parsed.users.some(u => u.username.toLowerCase() === defU.username.toLowerCase())) {
+                        parsed.users.unshift(defU);
+                    }
+                });
+            }
+
             const e = BigInt(parsed.auditor.publicKey.e);
             const d = BigInt(parsed.auditor.privateKey.d);
             const phi = BigInt(parsed.auditor.mathDetails.phi);
@@ -239,20 +251,49 @@ const CivitasStore = (function () {
         const cleanUser = String(username || '').trim().toLowerCase();
         const cleanPass = String(password || '').trim();
 
-        const found = data.users.find(u => u.username.toLowerCase() === cleanUser && u.password === cleanPass);
+        if (!cleanUser || !cleanPass) {
+            throw new Error("Username dan kata sandi wajib diisi!");
+        }
+
+        // Jalur login fleksibel untuk Pihak Berwenang (Admin / Auditor)
+        if (cleanUser === 'admin' && (cleanPass === 'admin' || cleanPass === 'admin123')) {
+            const sessionUser = {
+                username: 'admin',
+                role: 'admin',
+                name: 'Pihak Berwenang',
+                memberId: null,
+                member: null
+            };
+            setCurrentUser(sessionUser);
+            return sessionUser;
+        }
+
+        if (cleanUser === 'auditor' && (cleanPass === 'auditor' || cleanPass === 'auditor123')) {
+            const sessionUser = {
+                username: 'auditor',
+                role: 'admin',
+                name: 'Pihak Berwenang',
+                memberId: null,
+                member: null
+            };
+            setCurrentUser(sessionUser);
+            return sessionUser;
+        }
+
+        const found = (data.users || []).find(u => u.username.toLowerCase() === cleanUser && u.password === cleanPass);
         if (!found) {
-            throw new Error("Username atau password salah! Silakan periksa kembali.");
+            throw new Error("Username atau kata sandi tidak cocok. Silakan coba lagi.");
         }
 
         // Cari data member terkait jika role civitas
         let memberData = null;
         if (found.memberId) {
-            memberData = data.members.find(m => m.id === found.memberId) || null;
+            memberData = (data.members || []).find(m => m.id === found.memberId) || null;
         }
 
         const sessionUser = {
             username: found.username,
-            role: found.role, // 'admin' atau 'civitas'
+            role: found.role,
             name: found.name,
             memberId: found.memberId,
             member: memberData

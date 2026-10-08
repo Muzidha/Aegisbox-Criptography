@@ -140,10 +140,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (currentUser.role === 'admin') {
             // Pihak Berwenang / Auditor
-            if (avatarEl) avatarEl.textContent = '🛡️';
-            if (nameEl) nameEl.textContent = currentUser.name || currentUser.username;
+            if (avatarEl) {
+                avatarEl.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>';
+            }
+            if (nameEl) nameEl.textContent = 'Pihak Berwenang';
             if (roleEl) {
-                roleEl.textContent = 'Pihak Berwenang (Auditor)';
+                roleEl.textContent = 'Auditor';
                 roleEl.style.color = '#059669';
             }
 
@@ -167,10 +169,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             selectedSender = member;
 
-            if (avatarEl) avatarEl.textContent = '👤';
+            if (avatarEl) {
+                avatarEl.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
+            }
             if (nameEl) nameEl.textContent = currentUser.username;
             if (roleEl) {
-                roleEl.textContent = `Civitas (${member ? member.pseudonymCode : 'Pengirim'})`;
+                roleEl.textContent = member ? member.pseudonymCode : 'Pengirim';
                 roleEl.style.color = '#0d9488';
             }
 
